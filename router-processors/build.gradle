@@ -1,0 +1,10 @@
+apply plugin: 'java-library'
+
+dependencies {
+    implementation project(':router-annoations')
+    implementation 'com.google.auto.service:auto-service:1.0-rc3'
+    implementation 'com.squareup:javapoet:1.9.0'
+}
+
+//sourceCompatibility = JavaVersion.VERSION_1_7
+//targetCompatibility = JavaVersion.VERSION_1_7
