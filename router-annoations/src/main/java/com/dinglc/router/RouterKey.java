@@ -1,11 +1,10 @@
-package com.dinglc.router.annoation;
+package com.dinglc.router;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * Created by DingZhu on 2017/9/6.
@@ -13,9 +12,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * @since 1.0.0
  */
 @Documented
-@Target(ElementType.TYPE)
-@Retention(RUNTIME)
-public @interface RequestString {
+@Target(ElementType.PARAMETER)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface RouterKey {
 
-    String[] value();
+    String value();
 }

@@ -5,10 +5,19 @@ import android.os.PersistableBundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
+import com.dinglc.router.annoation.RequestBoolean;
+import com.dinglc.router.annoation.RequestByte;
+import com.dinglc.router.annoation.RequestChar;
 import com.dinglc.router.annoation.RequestInt;
+import com.dinglc.router.annoation.RequestSerializable;
+import com.dinglc.router.annoation.RequestShort;
 
 
-@RequestInt("id")
+@RequestInt("id") @RequestShort({"p1","p2"})
+@RequestBoolean({"b1","b2"})
+@RequestSerializable("s1")
+@RequestChar("c1")
+@RequestByte("by1")
 public class BActivity extends AppCompatActivity {
 
     @Override

@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/AutoRouter.iml" filepath="$PROJECT_DIR$/AutoRouter.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://C:\Users\DingZhu\Documents\WorkSpace\AutoRouter\router-annoations\library.iml" filepath="C:\Users\DingZhu\Documents\WorkSpace\AutoRouter\router-annoations\library.iml" />
       <module fileurl="file://$PROJECT_DIR$/router-annoations/router-annoations.iml" filepath="$PROJECT_DIR$/router-annoations/router-annoations.iml" />
       <module fileurl="file://$PROJECT_DIR$/router-processors/router-processors.iml" filepath="$PROJECT_DIR$/router-processors/router-processors.iml" />
     </modules>

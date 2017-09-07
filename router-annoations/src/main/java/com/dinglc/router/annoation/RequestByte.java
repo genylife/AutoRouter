@@ -10,7 +10,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Documented
 @Target(ElementType.TYPE)
 @Retention(RUNTIME)
-public @interface RequestInt {
+public @interface RequestByte {
 
     String[] value();
 }
