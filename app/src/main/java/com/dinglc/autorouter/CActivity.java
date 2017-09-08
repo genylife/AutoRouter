@@ -15,11 +15,7 @@ public class CActivity extends AppCompatActivity {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         TextView textView=new TextView(this);
-//        ViewGroup.LayoutParams layoutParams = textView.getLayoutParams();
-//        layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
-//        layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
-//        textView.setLayoutParams(layoutParams);
-        textView.setText("8436463436436464545555555555555555555555555555555");
+        textView.setText("this ia C activity");
         setContentView(textView);
     }
 }

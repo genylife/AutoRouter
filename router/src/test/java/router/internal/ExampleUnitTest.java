@@ -1,4 +1,4 @@
-package com.dinglc.router;
+package router.internal;
 
 import org.junit.Test;
 

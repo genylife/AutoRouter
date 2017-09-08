@@ -11,34 +11,36 @@ public class Router {
 
     private Activity mActivity;
 
-    public Router(Activity activity) throws ClassNotFoundException {
+    private Router(Activity activity) {
         mActivity = activity;
-        Class<?> routerService;
-        try {
-            routerService = Class.forName("router.RouterService");
-            Object o = create(routerService);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        
     }
 
     @SuppressWarnings("unchecked")
-    private <T> T create(Class<T> service) {
-        
+    public <T> T create(Class<T> service) {
+        if(service.getCanonicalName().equals("router.RouterService")) {
+            return (T) Proxy.newProxyInstance(service.getClassLoader(), new Class[]{service},
+                    new InvocationHandler() {
+                        @Override
+                        public Object invoke(Object o, Method method, Object[] objects) throws Throwable {
+                            String toActivityClass = method.getAnnotation(RouterClass.class).value();
+                            Class<?> toActivity = Class.forName(toActivityClass);
+                            Intent i = new Intent(mActivity, toActivity);
+                            mActivity.startActivity(i);
+                            return null;
+                        }
+                    });
+        } else {
+            throw new IllegalArgumentException("The param must be RouterService.class,but this is not!!");
+        }
+    }
+    
+    public Router inject(){
+//        mActivity.getIntent().
+        return this;
+    }
 
-
-        return (T) Proxy.newProxyInstance(service.getClassLoader(), new Class[]{service},
-                new InvocationHandler() {
-                    @Override
-                    public Object invoke(Object o, Method method, Object[] objects) throws Throwable {
-                        String toActivityClass = method.getAnnotation(RouterClass.class).value();
-                        Class<?> toActivity = Class.forName(toActivityClass);
-                        Intent i=new Intent(mActivity,toActivity);
-                        mActivity.startActivity(i);
-                        return null;
-                    }
-                });
+    public static Router init(Activity activity) {
+        return new Router(activity);
     }
 
 
