@@ -5,13 +5,12 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
-import com.test.RouterService;
-
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 import router.RouterClass;
+import router.RouterService;
 import router.annoation.RequestInt;
 import router.annoation.RequestString;
 import router.injector.InjectIntExtra;
