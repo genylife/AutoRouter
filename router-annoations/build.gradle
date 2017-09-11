@@ -4,5 +4,5 @@ apply plugin: 'java-library'
 //targetCompatibility = JavaVersion.VERSION_1_7
 
 dependencies {
-
+    compileOnly files("${System.properties['java.home']}/lib/tools.jar")
 }

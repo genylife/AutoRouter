@@ -4,7 +4,7 @@ dependencies {
     implementation project(':router-annoations')
     implementation 'com.google.auto.service:auto-service:1.0-rc3'
     implementation 'com.squareup:javapoet:1.9.0'
-    compileOnly files(org.gradle.internal.jvm.Jvm.current().getToolsJar())
+    compileOnly files("${System.properties['java.home']}/lib/tools.jar")
 }
 
 //sourceCompatibility = JavaVersion.VERSION_1_7

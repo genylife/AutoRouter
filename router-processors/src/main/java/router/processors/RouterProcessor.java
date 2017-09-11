@@ -11,9 +11,7 @@ import com.squareup.javapoet.TypeSpec;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,11 +52,6 @@ public class RouterProcessor extends AbstractProcessor {
 
     private TypeSpec.Builder routerServiceClassBuilder;
     private Filer mFiler;
-
-    private List<Class<? extends Annotation>> LISTENERS = Arrays.asList(
-            RequestInt.class,
-            RequestString.class
-    );
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -305,16 +298,6 @@ public class RouterProcessor extends AbstractProcessor {
                 intoMap(result, typeElement, routerElement);
             }
         }
-        //  13
-        //        for (Element element : roundEnv.getElementsAnnotatedWith(RequestString.class)) {
-        //            if(element.getKind() == ElementKind.CLASS) {
-        //                TypeElement typeElement = (TypeElement) element;
-        //                RouterElement routerElement = new RouterElement(RequestString.class,
-        //                        typeElement.getAnnotation(RequestString.class).value());
-        //                intoMap(result, typeElement, routerElement);
-        //            }
-        //        }
-
 
         return result;
     }
