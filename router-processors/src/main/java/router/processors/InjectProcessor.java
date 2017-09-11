@@ -4,6 +4,7 @@ import com.google.auto.service.AutoService;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeSpec;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -11,6 +12,8 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.Filer;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
@@ -33,6 +36,13 @@ import router.injector.InjectStringExtra;
 @AutoService(Processor.class)
 public class InjectProcessor extends AbstractProcessor {
 
+    private Filer mFiler;
+
+    @Override public synchronized void init(ProcessingEnvironment processingEnv) {
+        super.init(processingEnv);
+        mFiler = processingEnv.getFiler();
+    }
+
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         Map<TypeElement, Set<InjectElement>> typeElementSetMap = scanAllElements(roundEnv);
@@ -43,6 +53,11 @@ public class InjectProcessor extends AbstractProcessor {
                     .addModifiers(Modifier.PUBLIC);
             JavaFile javaFile = JavaFile.builder(key.getEnclosingElement().toString(), typeSpecBuilder.build())
                     .build();
+            try {
+                javaFile.writeTo(mFiler);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
         }
         return false;
