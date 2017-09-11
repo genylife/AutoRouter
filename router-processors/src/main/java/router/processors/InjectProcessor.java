@@ -1,8 +1,11 @@
 package router.processors;
 
 import com.google.auto.service.AutoService;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.TypeSpec;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -11,7 +14,11 @@ import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 
 import router.injector.InjectBooleanExtra;
 import router.injector.InjectByteExtra;
@@ -28,24 +35,44 @@ public class InjectProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        Map<TypeElement, Set<RouterElement>> typeElementSetMap = scanAllElements(roundEnv);
+        Map<TypeElement, Set<InjectElement>> typeElementSetMap = scanAllElements(roundEnv);
+        for (Map.Entry<TypeElement, Set<InjectElement>> entry : typeElementSetMap.entrySet()) {
+            TypeElement key = entry.getKey();
+            Set<InjectElement> value = entry.getValue();
+            TypeSpec.Builder typeSpecBuilder = TypeSpec.classBuilder(key.getSimpleName() + "_RouterInject")
+                    .addModifiers(Modifier.PUBLIC);
+            JavaFile javaFile = JavaFile.builder(key.getEnclosingElement().toString(), typeSpecBuilder.build())
+                    .build();
+
+        }
         return false;
     }
 
-    private Map<TypeElement, Set<RouterElement>> scanAllElements(RoundEnvironment roundEnv) {
-        Map<TypeElement, Set<RouterElement>> result = new HashMap<>();
-        //  0
-//        for (Element element : roundEnv.getElementsAnnotatedWith(InjectBooleanExtra.class)) {
-//            if(element.getKind() == ElementKind.FIELD) {
-//                TypeElement typeElement = (TypeElement) element;
-//                RouterElement routerElement = new RouterElement(AutoRouter.class,
-//                        new String[]{});
-//                intoMap(result, typeElement, routerElement);
-//            }
-//        }
+    private Map<TypeElement, Set<InjectElement>> scanAllElements(RoundEnvironment roundEnv) {
+        Map<TypeElement, Set<InjectElement>> result = new HashMap<>();
+        //          0
+        for (Element element : roundEnv.getElementsAnnotatedWith(InjectIntExtra.class)) {
+            if(element.getKind() == ElementKind.FIELD) {
+                VariableElement fieldElement = (VariableElement) element;
+                TypeElement typeElement = (TypeElement) fieldElement.getEnclosingElement();
+                String key = fieldElement.getAnnotation(InjectIntExtra.class).key();
+                int defaultValue = fieldElement.getAnnotation(InjectIntExtra.class).defaultValue();
+                InjectElement injectElement = new InjectElement(InjectIntExtra.class, key, defaultValue);
+                intoMap(result, typeElement, injectElement);
+            }
+        }
         return result;
     }
 
+    private void intoMap(Map<TypeElement, Set<InjectElement>> result, TypeElement key, InjectElement value) {
+        if(result.containsKey(key)) {
+            result.get(key).add(value);
+        } else {
+            Set<InjectElement> tempSet = new HashSet<>();
+            tempSet.add(value);
+            result.put(key, tempSet);
+        }
+    }
 
     @Override
     public Set<String> getSupportedAnnotationTypes() {
