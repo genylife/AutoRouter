@@ -1,7 +1,9 @@
 package router.processors;
 
 import com.google.auto.service.AutoService;
+import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 
 import java.io.IOException;
@@ -23,6 +25,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
+import router.RouterInjector;
 import router.injector.InjectBooleanExtra;
 import router.injector.InjectByteExtra;
 import router.injector.InjectCharExtra;
@@ -49,9 +52,26 @@ public class InjectProcessor extends AbstractProcessor {
         for (Map.Entry<TypeElement, Set<InjectElement>> entry : typeElementSetMap.entrySet()) {
             TypeElement key = entry.getKey();
             Set<InjectElement> value = entry.getValue();
-            TypeSpec.Builder typeSpecBuilder = TypeSpec.classBuilder(key.getSimpleName() + "_RouterInject")
+            String packageName = key.getEnclosingElement().toString();
+            MethodSpec constructorMethodSpec = MethodSpec.constructorBuilder()
+                    .addParameter(ClassName.get(packageName, key.getSimpleName().toString()), "activity")
+                    .addModifiers(Modifier.PUBLIC)
+                    .addStatement("mActivity = activity")
+                    .build();
+            MethodSpec.Builder injectMethodBuilder = MethodSpec.methodBuilder("inject")
+                    .addAnnotation(Override.class)
                     .addModifiers(Modifier.PUBLIC);
-            JavaFile javaFile = JavaFile.builder(key.getEnclosingElement().toString(), typeSpecBuilder.build())
+            for (InjectElement e : value) {
+                injectMethodBuilder.addStatement("mActivity.$L = mActivity.getIntent().getIntExtra(\"$L\",$L)",
+                        e.getFieldName(), e.getKey(), e.getDefValue());
+            }
+            TypeSpec.Builder typeSpecBuilder = TypeSpec.classBuilder(key.getSimpleName() + "_RouterInject")
+                    .addModifiers(Modifier.PUBLIC)
+                    .addSuperinterface(RouterInjector.class)
+                    .addMethod(injectMethodBuilder.build())
+                    .addField(ClassName.get(packageName, key.getSimpleName().toString()), "mActivity")
+                    .addMethod(constructorMethodSpec);
+            JavaFile javaFile = JavaFile.builder(packageName, typeSpecBuilder.build())
                     .build();
             try {
                 javaFile.writeTo(mFiler);
@@ -69,10 +89,11 @@ public class InjectProcessor extends AbstractProcessor {
         for (Element element : roundEnv.getElementsAnnotatedWith(InjectIntExtra.class)) {
             if(element.getKind() == ElementKind.FIELD) {
                 VariableElement fieldElement = (VariableElement) element;
+                String fieldName = fieldElement.getSimpleName().toString();
                 TypeElement typeElement = (TypeElement) fieldElement.getEnclosingElement();
                 String key = fieldElement.getAnnotation(InjectIntExtra.class).key();
                 int defaultValue = fieldElement.getAnnotation(InjectIntExtra.class).defaultValue();
-                InjectElement injectElement = new InjectElement(InjectIntExtra.class, key, defaultValue);
+                InjectElement injectElement = new InjectElement(fieldName, InjectIntExtra.class, key, defaultValue);
                 intoMap(result, typeElement, injectElement);
             }
         }

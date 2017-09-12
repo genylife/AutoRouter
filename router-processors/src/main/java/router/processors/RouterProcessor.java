@@ -10,7 +10,6 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -37,13 +36,10 @@ import router.annoation.AutoRouter;
 import router.annoation.RequestBoolean;
 import router.annoation.RequestByte;
 import router.annoation.RequestChar;
-import router.annoation.RequestCharSequence;
 import router.annoation.RequestDouble;
 import router.annoation.RequestFloat;
 import router.annoation.RequestInt;
 import router.annoation.RequestLong;
-import router.annoation.RequestParcelable;
-import router.annoation.RequestSerializable;
 import router.annoation.RequestShort;
 import router.annoation.RequestString;
 
@@ -139,19 +135,6 @@ public class RouterProcessor extends AbstractProcessor {
                     }
                     if(re.getAnnotation().getCanonicalName().equals(RequestDouble.class.getCanonicalName())) {
                         ParameterSpec parameterSpec = ParameterSpec.builder(TypeName.DOUBLE, str)
-                                .addAnnotation(annotationSpec)
-                                .build();
-                        parameterSpecList.add(parameterSpec);
-                    }
-                    if(re.getAnnotation().getCanonicalName().equals(RequestCharSequence.class.getCanonicalName())) {
-                        ParameterSpec parameterSpec = ParameterSpec.builder(ClassName.get(CharSequence.class), str)
-                                .addAnnotation(annotationSpec)
-                                .build();
-                        parameterSpecList.add(parameterSpec);
-                    }
-
-                    if(re.getAnnotation().getCanonicalName().equals(RequestSerializable.class.getCanonicalName())) {
-                        ParameterSpec parameterSpec = ParameterSpec.builder(ClassName.get(Serializable.class), str)
                                 .addAnnotation(annotationSpec)
                                 .build();
                         parameterSpecList.add(parameterSpec);
@@ -271,34 +254,6 @@ public class RouterProcessor extends AbstractProcessor {
                 intoMap(result, typeElement, routerElement);
             }
         }
-        //  10
-        for (Element element : roundEnv.getElementsAnnotatedWith(RequestCharSequence.class)) {
-            if(element.getKind() == ElementKind.CLASS) {
-                TypeElement typeElement = (TypeElement) element;
-                RouterElement routerElement = new RouterElement(RequestCharSequence.class,
-                        typeElement.getAnnotation(RequestCharSequence.class).value());
-                intoMap(result, typeElement, routerElement);
-            }
-        }
-        //  11
-        for (Element element : roundEnv.getElementsAnnotatedWith(RequestParcelable.class)) {
-            if(element.getKind() == ElementKind.CLASS) {
-                TypeElement typeElement = (TypeElement) element;
-                RouterElement routerElement = new RouterElement(RequestParcelable.class,
-                        typeElement.getAnnotation(RequestParcelable.class).value());
-                intoMap(result, typeElement, routerElement);
-            }
-        }
-        //  12
-        for (Element element : roundEnv.getElementsAnnotatedWith(RequestSerializable.class)) {
-            if(element.getKind() == ElementKind.CLASS) {
-                TypeElement typeElement = (TypeElement) element;
-                RouterElement routerElement = new RouterElement(RequestSerializable.class,
-                        typeElement.getAnnotation(RequestSerializable.class).value());
-                intoMap(result, typeElement, routerElement);
-            }
-        }
-
         return result;
     }
 
@@ -316,18 +271,15 @@ public class RouterProcessor extends AbstractProcessor {
     public Set<String> getSupportedAnnotationTypes() {
         LinkedHashSet<String> annotations = new LinkedHashSet<>();
         annotations.add(AutoRouter.class.getCanonicalName());
-        annotations.add(RequestInt.class.getCanonicalName());
-        annotations.add(RequestString.class.getCanonicalName());
-        annotations.add(RequestByte.class.getCanonicalName());
         annotations.add(RequestBoolean.class.getCanonicalName());
+        annotations.add(RequestByte.class.getCanonicalName());
         annotations.add(RequestChar.class.getCanonicalName());
         annotations.add(RequestShort.class.getCanonicalName());
+        annotations.add(RequestInt.class.getCanonicalName());
         annotations.add(RequestLong.class.getCanonicalName());
         annotations.add(RequestFloat.class.getCanonicalName());
         annotations.add(RequestDouble.class.getCanonicalName());
-        annotations.add(RequestCharSequence.class.getCanonicalName());
-        annotations.add(RequestParcelable.class.getCanonicalName());
-        annotations.add(RequestSerializable.class.getCanonicalName());
+        annotations.add(RequestString.class.getCanonicalName());
         return annotations;
     }
 

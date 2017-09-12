@@ -7,11 +7,22 @@ package router.processors;
  */
 
 public class InjectElement {
+
+    private String mFieldName;
     private Class<?> mAnnotation;
     private String key;
     private Object defValue;
 
-    public InjectElement(Class<?> annotation, String key, Object defValue) {
+    public String getFieldName() {
+        return mFieldName;
+    }
+
+    public void setFieldName(String fieldName) {
+        mFieldName = fieldName;
+    }
+
+    public InjectElement(String fieldName,Class<?> annotation, String key, Object defValue) {
+        mFieldName =fieldName;
         mAnnotation = annotation;
         this.key = key;
         this.defValue = defValue;

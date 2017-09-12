@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 @Documented
 @Target(ElementType.PARAMETER)
-@Retention(RetentionPolicy.CLASS)
+@Retention(RetentionPolicy.RUNTIME)
 public @interface RouterKey {
 
     String value();
