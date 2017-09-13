@@ -7,26 +7,18 @@ import android.widget.TextView;
 
 import router.Router;
 import router.RouterService;
-import router.annoation.RequestBoolean;
-import router.annoation.RequestByte;
-import router.annoation.RequestChar;
-import router.annoation.RequestInt;
-import router.annoation.RequestShort;
+import router.request.AutoRouter;
 
-@RequestInt("a") 
-@RequestShort({"b","d"})
-@RequestBoolean({"f","r"})
-@RequestChar("w")
-@RequestByte("v")
+@AutoRouter
 public class BActivity extends AppCompatActivity {
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        TextView textView=new TextView(this);
+        TextView textView = new TextView(this);
         textView.setText("this is B activity!");
         setContentView(textView);
         Router.init(this).create(RouterService.class)
-                .toMainActivity(20,"mmmmm",5);
+                .toMainActivity(true, (byte) 97, 's', 98.4D, 78.3F, 34, 123456789L, (short) 11, "this is a string!");
     }
 }

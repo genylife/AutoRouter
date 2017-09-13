@@ -11,5 +11,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.CLASS)
 public @interface InjectByteExtra {
     String key();
-    int defaultValue();
+    byte defaultValue();
 }

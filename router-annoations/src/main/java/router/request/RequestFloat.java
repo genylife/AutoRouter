@@ -1,4 +1,4 @@
-package router.annoation;
+package router.request;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -10,7 +10,7 @@ import static java.lang.annotation.RetentionPolicy.CLASS;
 @Documented
 @Target(ElementType.TYPE)
 @Retention(CLASS)
-public @interface RequestInt {
+public @interface RequestFloat {
 
     String[] value();
 }

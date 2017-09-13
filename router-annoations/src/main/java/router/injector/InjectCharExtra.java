@@ -11,5 +11,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.CLASS)
 public @interface InjectCharExtra {
     String key();
-    int defaultValue();
+    char defaultValue();
 }

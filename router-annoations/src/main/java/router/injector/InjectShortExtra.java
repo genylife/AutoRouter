@@ -11,5 +11,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.CLASS)
 public @interface InjectShortExtra {
     String key();
-    int defaultValue();
+    short defaultValue();
 }

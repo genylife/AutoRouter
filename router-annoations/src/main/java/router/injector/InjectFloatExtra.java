@@ -11,5 +11,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.CLASS)
 public @interface InjectFloatExtra {
     String key();
-    int defaultValue();
+    float defaultValue();
 }

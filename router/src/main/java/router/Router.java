@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.content.Intent;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
@@ -134,7 +136,17 @@ public class Router {
     }
 
     public Router inject() {
-        //        mActivity.getIntent().
+        String injectClass = mActivity.getClass().getName() + "_RouterInject";
+        try {
+            Constructor<?> constructor = mActivity.getClassLoader()
+                    .loadClass(injectClass)
+                    .getConstructor(mActivity.getClass());
+            constructor.newInstance(mActivity);
+        } catch (InstantiationException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException | 
+                IllegalAccessException e) {
+            e.printStackTrace();
+            return null;
+        }
         return this;
     }
 

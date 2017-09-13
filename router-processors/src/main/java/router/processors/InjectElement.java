@@ -1,5 +1,7 @@
 package router.processors;
 
+import javax.lang.model.type.TypeMirror;
+
 /**
  * Created by wanqi on 2017/9/11.
  *
@@ -12,6 +14,16 @@ public class InjectElement {
     private Class<?> mAnnotation;
     private String key;
     private Object defValue;
+    private TypeMirror mType;
+
+    public TypeMirror getType() {
+        return mType;
+    }
+
+    public void setType(TypeMirror type) {
+        mType = type;
+    }
+
 
     public String getFieldName() {
         return mFieldName;
@@ -21,9 +33,9 @@ public class InjectElement {
         mFieldName = fieldName;
     }
 
-    public InjectElement(String fieldName,Class<?> annotation, String key, Object defValue) {
+    public InjectElement(String fieldName,TypeMirror type, String key, Object defValue) {
         mFieldName =fieldName;
-        mAnnotation = annotation;
+        mType = type;
         this.key = key;
         this.defValue = defValue;
     }

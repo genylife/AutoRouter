@@ -7,6 +7,7 @@
     tools:context="com.dinglc.autorouter.MainActivity">
 
     <TextView
+        android:id="@+id/tt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="this is main activity!"

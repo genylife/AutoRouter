@@ -12,6 +12,4 @@ import java.lang.annotation.Target;
 public @interface InjectStringExtra {
 
     String key();
-
-    String defaultValue();
 }

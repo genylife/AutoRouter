@@ -11,5 +11,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.CLASS)
 public @interface InjectBooleanExtra {
     String key();
-    int defaultValue();
+    boolean defaultValue();
 }
