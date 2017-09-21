@@ -27,8 +27,7 @@ public class Router {
                         public Object invoke(Object o, Method method, Object[] objects) throws Throwable {
                             RouterMethod routerMethod = loadRouterMethod(method, objects);
                             Intent intent = putExtra(routerMethod, objects);
-                            mActivity.startActivity(intent);
-                            return null;
+                            return new IntentWrapper(mActivity,intent);
                         }
                     });
         } else {
@@ -103,31 +102,31 @@ public class Router {
         for (int i = 0; i < parameters.length; i++) {
             Parameter p = parameters[i];
             switch (p.getParamType()) {
-                case Parameter.ParameterType.Type_Boolean:
+                case Parameter.ParameterType.TYPE_BOOLEAN:
                     intent.putExtra(p.getExtraKey(), (boolean) objects[i]);
                     break;
-                case Parameter.ParameterType.Type_Byte:
+                case Parameter.ParameterType.TYPE_BYTE:
                     intent.putExtra(p.getExtraKey(), (byte) objects[i]);
                     break;
-                case Parameter.ParameterType.Type_char:
+                case Parameter.ParameterType.TYPE_CHAR:
                     intent.putExtra(p.getExtraKey(), (char) objects[i]);
                     break;
-                case Parameter.ParameterType.Type_short:
+                case Parameter.ParameterType.TYPE_SHORT:
                     intent.putExtra(p.getExtraKey(), (short) objects[i]);
                     break;
-                case Parameter.ParameterType.Type_int:
+                case Parameter.ParameterType.TYPE_INT:
                     intent.putExtra(p.getExtraKey(), (int) objects[i]);
                     break;
-                case Parameter.ParameterType.Type_long:
+                case Parameter.ParameterType.TYPE_LONG:
                     intent.putExtra(p.getExtraKey(), (long) objects[i]);
                     break;
-                case Parameter.ParameterType.Type_float:
+                case Parameter.ParameterType.TYPE_FLOAT:
                     intent.putExtra(p.getExtraKey(), (float) objects[i]);
                     break;
-                case Parameter.ParameterType.Type_double:
+                case Parameter.ParameterType.TYPE_DOUBLE:
                     intent.putExtra(p.getExtraKey(), (double) objects[i]);
                     break;
-                case Parameter.ParameterType.Type_string:
+                case Parameter.ParameterType.TYPE_STRING:
                     intent.putExtra(p.getExtraKey(), (String) objects[i]);
                     break;
             }
@@ -145,7 +144,7 @@ public class Router {
         } catch (InstantiationException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException | 
                 IllegalAccessException e) {
             e.printStackTrace();
-            return null;
+            return this;
         }
         return this;
     }

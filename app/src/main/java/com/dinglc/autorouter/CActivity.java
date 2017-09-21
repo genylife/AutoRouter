@@ -25,6 +25,8 @@ import router.request.RequestShort;
 @RequestBoolean({"f","r"})
 @RequestChar("w")
 @RequestByte("v")
+//@AutoRouter(value = {"a","b","d","f","r","w","v"},
+//        type = {Integer.class,Short.class,Short.class,Boolean.class,Boolean.class,Character.class,Byte.class})
 public class CActivity extends AppCompatActivity {
 
     @InjectIntExtra(key = "a",defaultValue = -1) int a;

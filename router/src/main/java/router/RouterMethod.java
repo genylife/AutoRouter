@@ -1,27 +1,27 @@
 package router;
 
-public class RouterMethod {
+final class RouterMethod {
 
     private Class<?> mToActivity;
     private Parameter[] mParameters;
 
-    public RouterMethod(int paramsCount) {
+    RouterMethod(int paramsCount) {
         mParameters = new Parameter[paramsCount];
     }
 
-    public Class<?> getToActivity() {
+    Class<?> getToActivity() {
         return mToActivity;
     }
 
-    public void setToActivity(Class<?> toActivity) {
+    void setToActivity(Class<?> toActivity) {
         mToActivity = toActivity;
     }
 
-    public Parameter[] getParameters() {
+    Parameter[] getParameters() {
         return mParameters;
     }
 
-    public void setParameters(Parameter[] parameters) {
+    void setParameters(Parameter[] parameters) {
         mParameters = parameters;
     }
 }

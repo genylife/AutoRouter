@@ -19,6 +19,7 @@ public class BActivity extends AppCompatActivity {
         textView.setText("this is B activity!");
         setContentView(textView);
         Router.init(this).create(RouterService.class)
-                .toMainActivity(true, (byte) 97, 's', 98.4D, 78.3F, 34, 123456789L, (short) 11, "this is a string!");
+                .mainActivity(true, (byte) 97, 's', 98.4D, 78.3F, 34, 123456789L, (short) 11, "this is a string!")
+                .go();
     }
 }

@@ -75,7 +75,9 @@ public class RouterProcessor extends AbstractProcessor {
             AnnotationSpec methodAnnotationSpec = AnnotationSpec.builder(RouterClass.class)
                     .addMember("value", "\"" + next.getQualifiedName().toString() + "\"")
                     .build();
-            MethodSpec.Builder tempMethodBuild = MethodSpec.methodBuilder("to" + next.getSimpleName())
+            String methodName = next.getSimpleName().toString();
+            methodName = methodName.substring(0, 1).toLowerCase() + methodName.substring(1, methodName.length());
+            MethodSpec.Builder tempMethodBuild = MethodSpec.methodBuilder(methodName)
                     .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                     .addAnnotation(methodAnnotationSpec);
             List<ParameterSpec> parameterSpecList = new ArrayList<>();
@@ -85,56 +87,57 @@ public class RouterProcessor extends AbstractProcessor {
                     AnnotationSpec annotationSpec = AnnotationSpec.builder(RouterKey.class)
                             .addMember("value", "\"" + str + "\"")
                             .build();
+                    str = str.substring(0, 1).toUpperCase() + str.substring(1, str.length());
                     if(re.getAnnotation().getCanonicalName().equals(RequestInt.class.getCanonicalName())) {
-                        ParameterSpec parameterSpec = ParameterSpec.builder(TypeName.INT, "r_" + str)
+                        ParameterSpec parameterSpec = ParameterSpec.builder(TypeName.INT, "r" + str)
                                 .addAnnotation(annotationSpec)
                                 .build();
                         parameterSpecList.add(parameterSpec);
                     }
                     if(re.getAnnotation().getCanonicalName().equals(RequestString.class.getCanonicalName())) {
-                        ParameterSpec parameterSpec = ParameterSpec.builder(ClassName.get(String.class), "r_" + str)
+                        ParameterSpec parameterSpec = ParameterSpec.builder(ClassName.get(String.class), "r" + str)
                                 .addAnnotation(annotationSpec)
                                 .build();
                         parameterSpecList.add(parameterSpec);
                     }
                     if(re.getAnnotation().getCanonicalName().equals(RequestChar.class.getCanonicalName())) {
-                        ParameterSpec parameterSpec = ParameterSpec.builder(TypeName.CHAR, "r_" + str)
+                        ParameterSpec parameterSpec = ParameterSpec.builder(TypeName.CHAR, "r" + str)
                                 .addAnnotation(annotationSpec)
                                 .build();
                         parameterSpecList.add(parameterSpec);
                     }
                     if(re.getAnnotation().getCanonicalName().equals(RequestBoolean.class.getCanonicalName())) {
-                        ParameterSpec parameterSpec = ParameterSpec.builder(TypeName.BOOLEAN, "r_" + str)
+                        ParameterSpec parameterSpec = ParameterSpec.builder(TypeName.BOOLEAN, "r" + str)
                                 .addAnnotation(annotationSpec)
                                 .build();
                         parameterSpecList.add(parameterSpec);
                     }
                     if(re.getAnnotation().getCanonicalName().equals(RequestByte.class.getCanonicalName())) {
-                        ParameterSpec parameterSpec = ParameterSpec.builder(TypeName.BYTE, "r_" + str)
+                        ParameterSpec parameterSpec = ParameterSpec.builder(TypeName.BYTE, "r" + str)
                                 .addAnnotation(annotationSpec)
                                 .build();
                         parameterSpecList.add(parameterSpec);
                     }
                     if(re.getAnnotation().getCanonicalName().equals(RequestShort.class.getCanonicalName())) {
-                        ParameterSpec parameterSpec = ParameterSpec.builder(TypeName.SHORT, "r_" + str)
+                        ParameterSpec parameterSpec = ParameterSpec.builder(TypeName.SHORT, "r" + str)
                                 .addAnnotation(annotationSpec)
                                 .build();
                         parameterSpecList.add(parameterSpec);
                     }
                     if(re.getAnnotation().getCanonicalName().equals(RequestLong.class.getCanonicalName())) {
-                        ParameterSpec parameterSpec = ParameterSpec.builder(TypeName.LONG, "r_" + str)
+                        ParameterSpec parameterSpec = ParameterSpec.builder(TypeName.LONG, "r" + str)
                                 .addAnnotation(annotationSpec)
                                 .build();
                         parameterSpecList.add(parameterSpec);
                     }
                     if(re.getAnnotation().getCanonicalName().equals(RequestFloat.class.getCanonicalName())) {
-                        ParameterSpec parameterSpec = ParameterSpec.builder(TypeName.FLOAT, "r_" + str)
+                        ParameterSpec parameterSpec = ParameterSpec.builder(TypeName.FLOAT, "r" + str)
                                 .addAnnotation(annotationSpec)
                                 .build();
                         parameterSpecList.add(parameterSpec);
                     }
                     if(re.getAnnotation().getCanonicalName().equals(RequestDouble.class.getCanonicalName())) {
-                        ParameterSpec parameterSpec = ParameterSpec.builder(TypeName.DOUBLE, "r_" + str)
+                        ParameterSpec parameterSpec = ParameterSpec.builder(TypeName.DOUBLE, "r" + str)
                                 .addAnnotation(annotationSpec)
                                 .build();
                         parameterSpecList.add(parameterSpec);
@@ -142,7 +145,8 @@ public class RouterProcessor extends AbstractProcessor {
                 }
             }
             parameterSpecList.sort(Comparator.comparing(o -> o.name));
-            tempMethodBuild.addParameters(parameterSpecList);
+            TypeName returnType = ClassName.get("router", "IntentWrapper");
+            tempMethodBuild.addParameters(parameterSpecList).returns(returnType);
             routerServiceClassBuilder.addMethod(tempMethodBuild.build());
         }
         //        System.out.println("------------------------------");

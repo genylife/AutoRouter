@@ -67,7 +67,8 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, BActivity.class);
         Bundle bundle = new Bundle();
 
-        service.toCActivity(1, ((short) 2), ((short) 3), true, false, ((byte) 98), 'c');
-        //        service.toCActivity();
+        //1, ((short) 2), ((short) 3), true, false, ((byte) 98), 'c'
+        service.cActivity(1, ((short) 2), ((short) 3), true, false, ((byte) 98), 'c')
+                .go();
     }
 }
