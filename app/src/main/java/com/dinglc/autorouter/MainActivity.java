@@ -8,9 +8,9 @@ import android.widget.TextView;
 import java.util.Locale;
 
 import router.AutoExtra;
+import router.AutoRouter;
 import router.Router;
 import router.RouterService;
-import router.AutoRouter;
 import router.RouterType;
 
 
@@ -19,15 +19,15 @@ import router.RouterType;
                 RouterType.LONG, RouterType.FLOAT, RouterType.DOUBLE})
 public class MainActivity extends AppCompatActivity {
 
-    @AutoExtra("in") int mInt;
-    @AutoExtra("bo") boolean mBoolean;
-    @AutoExtra("by") byte mByte;
-    @AutoExtra("ch") char mChar;
-    @AutoExtra("sh") short mShort;
-    @AutoExtra("lo") long mLong;
-    @AutoExtra("fl") float mFloat;
-    @AutoExtra("dou") double mDouble;
-    @AutoExtra("st") String mString;
+    @AutoExtra int mInt;
+    @AutoExtra boolean mBoolean;
+    @AutoExtra byte mByte;
+    @AutoExtra char mChar;
+    @AutoExtra short mShort;
+    @AutoExtra long mLong;
+    @AutoExtra float mFloat;
+    @AutoExtra double mDouble;
+    @AutoExtra String mString;
 
 
     @Override
@@ -45,7 +45,8 @@ public class MainActivity extends AppCompatActivity {
 
         Intent intent = new Intent(this, BActivity.class);
         Bundle bundle = new Bundle();
-
+startActivity(intent,bundle);
+        
         //1, ((short) 2), ((short) 3), true, false, ((byte) 98), 'c'
         service.cActivity(1, ((short) 2), ((short) 3), true, false, ((char) 98), ((byte) 33))
                 .go();

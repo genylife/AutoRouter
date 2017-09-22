@@ -7,5 +7,13 @@ package router;
  */
 
 public enum RouterType {
-    CHAR,BOOLEAN,BYTE,SHORT,INT,LONG,FLOAT,DOUBLE,STRING
+    BOOLEAN,
+    BYTE,
+    SHORT,
+    INT,
+    LONG,
+    CHAR,
+    FLOAT,
+    DOUBLE,
+    STRING
 }

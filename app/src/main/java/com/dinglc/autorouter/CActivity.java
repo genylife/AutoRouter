@@ -18,7 +18,7 @@ import router.RouterType;
                 RouterType.BYTE})
 public class CActivity extends AppCompatActivity {
 
-    @AutoExtra("a") int a;
+    @AutoExtra int a;
     @AutoExtra("b") short b;
     @AutoExtra("d") short d;
     @AutoExtra("f") boolean f;

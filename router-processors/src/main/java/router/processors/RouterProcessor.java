@@ -19,6 +19,7 @@ import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
+import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
@@ -30,11 +31,12 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.tools.Diagnostic;
 
 import router.AutoExtra;
+import router.AutoRouter;
 import router.RouterClass;
 import router.RouterKey;
-import router.AutoRouter;
 import router.RouterType;
 
 @AutoService(Processor.class)
@@ -42,11 +44,13 @@ public class RouterProcessor extends AbstractProcessor {
 
     private TypeSpec.Builder routerServiceClassBuilder;
     private Filer mFiler;
+    private Messager mMessager;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
         mFiler = processingEnv.getFiler();
+        mMessager = processingEnv.getMessager();
         routerServiceClassBuilder = TypeSpec.interfaceBuilder("RouterService")
                 .addModifiers(Modifier.PUBLIC);
     }
@@ -78,10 +82,11 @@ public class RouterProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        Map<TypeElement, List<ExtraElement>> extraMap = scanAutoExtra(roundEnv);
         Map<TypeElement, List<RouterElement>> routerMap = scanAutoRouter(roundEnv);
-
         genMethods(routerMap);
+        
+        Map<TypeElement, List<ExtraElement>> extraMap = scanAutoExtra(roundEnv, routerMap);
+        if(extraMap==null) return true;
 
         genExtraClass(extraMap);
 
@@ -215,7 +220,8 @@ public class RouterProcessor extends AbstractProcessor {
         return routerMap;
     }
 
-    private Map<TypeElement, List<ExtraElement>> scanAutoExtra(RoundEnvironment roundEnv) {
+    private Map<TypeElement, List<ExtraElement>> scanAutoExtra(RoundEnvironment roundEnv, Map<TypeElement,
+            List<RouterElement>> routerMap) {
         Map<TypeElement, List<ExtraElement>> extraMap = new HashMap<>();
         for (Element element : roundEnv.getElementsAnnotatedWith(AutoExtra.class)) {
             if(element.getKind() == ElementKind.FIELD) {
@@ -223,7 +229,35 @@ public class RouterProcessor extends AbstractProcessor {
                 String fieldName = fieldElement.getSimpleName().toString();
                 TypeElement typeElement = (TypeElement) fieldElement.getEnclosingElement();
                 String value = fieldElement.getAnnotation(AutoExtra.class).value();
-                ExtraElement extraElement = new ExtraElement(value, fieldName, fieldElement.asType());
+                TypeMirror typeMirror = fieldElement.asType();
+
+                if(value.equals("")) {
+                    List<RouterElement> routerElementList = routerMap.get(typeElement);
+                    List<RouterElement> sameType = new ArrayList<>();
+                    for (RouterElement routerElement : routerElementList) {
+                        if(typeMirror.getKind().ordinal() == routerElement.getType().ordinal() ||
+                                (typeMirror.getKind().ordinal() == TypeKind.DECLARED.ordinal()
+                                        && routerElement.getType().ordinal() == RouterType.STRING.ordinal())) {
+                            sameType.add(routerElement);
+                        }
+                    }
+                    if(sameType.size() == 0) {
+                        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "can not find any key to inject this " +
+                                "field! please see the field '" + fieldName + "'", fieldElement);
+                        return null;
+                    } else {
+                        if(sameType.size() > 1) {
+                            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "find one more key to inject this " +
+                                    "field,but cannot to select what " + "one!please see the field '" + fieldName + "'", 
+                                    fieldElement);
+                            return null;
+                        } else {
+                            value = sameType.get(0).getValue();
+                        }
+                    }
+                }
+
+                ExtraElement extraElement = new ExtraElement(value, fieldName, typeMirror);
                 List<ExtraElement> routerElementList = extraMap.get(typeElement);
                 if(routerElementList == null) {
                     List<ExtraElement> extraElementList = new ArrayList<>();
