@@ -7,7 +7,7 @@ import android.widget.TextView;
 
 import router.Router;
 import router.RouterService;
-import router.request.AutoRouter;
+import router.AutoRouter;
 
 @AutoRouter
 public class BActivity extends AppCompatActivity {
@@ -19,7 +19,8 @@ public class BActivity extends AppCompatActivity {
         textView.setText("this is B activity!");
         setContentView(textView);
         Router.init(this).create(RouterService.class)
-                .mainActivity(true, (byte) 97, 's', 98.4D, 78.3F, 34, 123456789L, (short) 11, "this is a string!")
+                .mainActivity(123,"this is a string",true, ((byte) 33),
+                        ((byte) 34),'c',9731923719L,1.3F,44.556D)
                 .go();
     }
 }

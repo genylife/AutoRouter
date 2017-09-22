@@ -11,9 +11,7 @@ import com.squareup.javapoet.TypeSpec;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -29,19 +27,15 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 
+import router.AutoExtra;
 import router.RouterClass;
 import router.RouterKey;
-import router.request.AutoRouter;
-import router.request.RequestBoolean;
-import router.request.RequestByte;
-import router.request.RequestChar;
-import router.request.RequestDouble;
-import router.request.RequestFloat;
-import router.request.RequestInt;
-import router.request.RequestLong;
-import router.request.RequestShort;
-import router.request.RequestString;
+import router.AutoRouter;
+import router.RouterType;
 
 @AutoService(Processor.class)
 public class RouterProcessor extends AbstractProcessor {
@@ -57,101 +51,40 @@ public class RouterProcessor extends AbstractProcessor {
                 .addModifiers(Modifier.PUBLIC);
     }
 
+
+    private TypeName convert(RouterType type) {
+        switch (type) {
+            case CHAR:
+                return TypeName.CHAR;
+            case BOOLEAN:
+                return TypeName.BOOLEAN;
+            case BYTE:
+                return TypeName.BYTE;
+            case SHORT:
+                return TypeName.SHORT;
+            case INT:
+                return TypeName.INT;
+            case LONG:
+                return TypeName.LONG;
+            case FLOAT:
+                return TypeName.FLOAT;
+            case DOUBLE:
+                return TypeName.DOUBLE;
+            case STRING:
+            default:
+                return ClassName.get(String.class);
+        }
+    }
+
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        for (Element element : roundEnv.getElementsAnnotatedWith(AutoRouter.class)) {
-            System.out.println("------------------------------");
-            if(element.getKind() == ElementKind.CLASS) {
-                TypeElement typeElement = (TypeElement) element;
-                System.out.println(typeElement.getSimpleName());
-                //                System.out.println(typeElement.getAnnotation(RequestInt.class).value());
-            }
-            System.out.println("------------------------------");
-        }
+        Map<TypeElement, List<ExtraElement>> extraMap = scanAutoExtra(roundEnv);
+        Map<TypeElement, List<RouterElement>> routerMap = scanAutoRouter(roundEnv);
 
-        Map<TypeElement, Set<RouterElement>> typeElementSetMap = scanAllElements(roundEnv);
-        for (TypeElement next : typeElementSetMap.keySet()) {//per method
-            Set<RouterElement> routerElements = typeElementSetMap.get(next);
-            AnnotationSpec methodAnnotationSpec = AnnotationSpec.builder(RouterClass.class)
-                    .addMember("value", "\"" + next.getQualifiedName().toString() + "\"")
-                    .build();
-            String methodName = next.getSimpleName().toString();
-            methodName = methodName.substring(0, 1).toLowerCase() + methodName.substring(1, methodName.length());
-            MethodSpec.Builder tempMethodBuild = MethodSpec.methodBuilder(methodName)
-                    .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                    .addAnnotation(methodAnnotationSpec);
-            List<ParameterSpec> parameterSpecList = new ArrayList<>();
-            for (RouterElement re : routerElements) {//per annotation
-                String[] routerValues = re.getValue();
-                for (String str : routerValues) {//per param
-                    AnnotationSpec annotationSpec = AnnotationSpec.builder(RouterKey.class)
-                            .addMember("value", "\"" + str + "\"")
-                            .build();
-                    str = str.substring(0, 1).toUpperCase() + str.substring(1, str.length());
-                    if(re.getAnnotation().getCanonicalName().equals(RequestInt.class.getCanonicalName())) {
-                        ParameterSpec parameterSpec = ParameterSpec.builder(TypeName.INT, "r" + str)
-                                .addAnnotation(annotationSpec)
-                                .build();
-                        parameterSpecList.add(parameterSpec);
-                    }
-                    if(re.getAnnotation().getCanonicalName().equals(RequestString.class.getCanonicalName())) {
-                        ParameterSpec parameterSpec = ParameterSpec.builder(ClassName.get(String.class), "r" + str)
-                                .addAnnotation(annotationSpec)
-                                .build();
-                        parameterSpecList.add(parameterSpec);
-                    }
-                    if(re.getAnnotation().getCanonicalName().equals(RequestChar.class.getCanonicalName())) {
-                        ParameterSpec parameterSpec = ParameterSpec.builder(TypeName.CHAR, "r" + str)
-                                .addAnnotation(annotationSpec)
-                                .build();
-                        parameterSpecList.add(parameterSpec);
-                    }
-                    if(re.getAnnotation().getCanonicalName().equals(RequestBoolean.class.getCanonicalName())) {
-                        ParameterSpec parameterSpec = ParameterSpec.builder(TypeName.BOOLEAN, "r" + str)
-                                .addAnnotation(annotationSpec)
-                                .build();
-                        parameterSpecList.add(parameterSpec);
-                    }
-                    if(re.getAnnotation().getCanonicalName().equals(RequestByte.class.getCanonicalName())) {
-                        ParameterSpec parameterSpec = ParameterSpec.builder(TypeName.BYTE, "r" + str)
-                                .addAnnotation(annotationSpec)
-                                .build();
-                        parameterSpecList.add(parameterSpec);
-                    }
-                    if(re.getAnnotation().getCanonicalName().equals(RequestShort.class.getCanonicalName())) {
-                        ParameterSpec parameterSpec = ParameterSpec.builder(TypeName.SHORT, "r" + str)
-                                .addAnnotation(annotationSpec)
-                                .build();
-                        parameterSpecList.add(parameterSpec);
-                    }
-                    if(re.getAnnotation().getCanonicalName().equals(RequestLong.class.getCanonicalName())) {
-                        ParameterSpec parameterSpec = ParameterSpec.builder(TypeName.LONG, "r" + str)
-                                .addAnnotation(annotationSpec)
-                                .build();
-                        parameterSpecList.add(parameterSpec);
-                    }
-                    if(re.getAnnotation().getCanonicalName().equals(RequestFloat.class.getCanonicalName())) {
-                        ParameterSpec parameterSpec = ParameterSpec.builder(TypeName.FLOAT, "r" + str)
-                                .addAnnotation(annotationSpec)
-                                .build();
-                        parameterSpecList.add(parameterSpec);
-                    }
-                    if(re.getAnnotation().getCanonicalName().equals(RequestDouble.class.getCanonicalName())) {
-                        ParameterSpec parameterSpec = ParameterSpec.builder(TypeName.DOUBLE, "r" + str)
-                                .addAnnotation(annotationSpec)
-                                .build();
-                        parameterSpecList.add(parameterSpec);
-                    }
-                }
-            }
-            parameterSpecList.sort(Comparator.comparing(o -> o.name));
-            TypeName returnType = ClassName.get("router", "IntentWrapper");
-            tempMethodBuild.addParameters(parameterSpecList).returns(returnType);
-            routerServiceClassBuilder.addMethod(tempMethodBuild.build());
-        }
-        //        System.out.println("------------------------------");
-        //        System.out.println(roundEnv.processingOver());
-        //        if(roundEnv.processingOver()) {
+        genMethods(routerMap);
+
+        genExtraClass(extraMap);
+
         JavaFile.Builder builder = JavaFile.builder("router", routerServiceClassBuilder.build());
         JavaFile javaFile = builder.build();
         try {
@@ -159,131 +92,157 @@ public class RouterProcessor extends AbstractProcessor {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //        }
-        //        System.out.println("------------------------------");
 
         return true;
     }
 
 
-    private Map<TypeElement, Set<RouterElement>> scanAllElements(RoundEnvironment roundEnv) {
-        Map<TypeElement, Set<RouterElement>> result = new HashMap<>();
-        //  0
+    private Object genDefValue(TypeMirror type) {
+        switch (type.getKind()) {
+            case CHAR:
+                return "(char)" + 0;
+            case BOOLEAN:
+                return false;
+            case BYTE:
+                return "(byte)" + Byte.MIN_VALUE;
+            case INT:
+            case LONG:
+                return Byte.MIN_VALUE;
+            case SHORT:
+                return "(short)" + Byte.MIN_VALUE;
+            case FLOAT:
+            case DOUBLE:
+                return -1;
+            case DECLARED:
+            default:
+                return "";
+        }
+    }
+
+    private void genExtraClass(Map<TypeElement, List<ExtraElement>> extraMap) {
+        for (TypeElement typeElement : extraMap.keySet()) {
+            String packageName = typeElement.getEnclosingElement().toString();
+            MethodSpec constructorMethodSpec = MethodSpec.constructorBuilder()
+                    .addParameter(ClassName.get(packageName, typeElement.getSimpleName().toString()), "activity")
+                    .addStatement("mActivity = activity")
+                    .addStatement("inject()")
+                    .build();
+            MethodSpec.Builder injectMethodBuilder = MethodSpec.methodBuilder("inject")
+                    .addModifiers(Modifier.PRIVATE);
+            List<ExtraElement> extraElementList = extraMap.get(typeElement);
+            for (ExtraElement extraElement : extraElementList) {
+                TypeMirror type = extraElement.getType();
+                TypeKind typeKind = type.getKind();
+                String methodName = typeKind.name().toLowerCase();
+                String sub1 = methodName.substring(1, methodName.length());
+                String sub0 = methodName.substring(0, 1).toUpperCase();
+                methodName = sub0 + sub1;
+
+
+                if(typeKind == TypeKind.DECLARED) {
+                    injectMethodBuilder.addStatement("mActivity.$L = mActivity.getIntent().get$LExtra(\"$L\")",
+                            extraElement.getFieldName(), "String", extraElement.getValue());
+                } else if(typeKind == TypeKind.BYTE || typeKind == TypeKind.SHORT || typeKind == TypeKind.CHAR) {
+                    injectMethodBuilder.addStatement("mActivity.$L = mActivity.getIntent().get$LExtra(\"$L\", $L)",
+                            extraElement.getFieldName(), methodName, extraElement.getValue(), genDefValue(type));
+                } else {
+                    injectMethodBuilder.addStatement("mActivity.$L = mActivity.getIntent().get$LExtra(\"$L\", $L)",
+                            extraElement.getFieldName(), methodName, extraElement.getValue(), genDefValue(type));
+                }
+            }
+            TypeSpec.Builder typeSpecBuilder = TypeSpec.classBuilder(typeElement.getSimpleName() + "_RouterInject")
+                    .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                    .addMethod(injectMethodBuilder.build())
+                    .addField(ClassName.get(packageName, typeElement.getSimpleName().toString()), "mActivity")
+                    .addMethod(constructorMethodSpec);
+            JavaFile javaFile = JavaFile.builder(packageName, typeSpecBuilder.build())
+                    .build();
+            try {
+                javaFile.writeTo(mFiler);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void genMethods(Map<TypeElement, List<RouterElement>> routerMap) {
+        for (TypeElement typeElement : routerMap.keySet()) {
+            AnnotationSpec methodAnnotationSpec = AnnotationSpec.builder(RouterClass.class)
+                    .addMember("value", "\"" + typeElement.getQualifiedName().toString() + "\"")
+                    .build();
+            TypeName returnType = ClassName.get("router", "IntentWrapper");
+            String methodName = typeElement.getSimpleName().toString();
+            methodName = methodName.substring(0, 1).toLowerCase() + methodName.substring(1, methodName.length());
+            MethodSpec.Builder methodBuild = MethodSpec.methodBuilder(methodName)
+                    .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                    .addAnnotation(methodAnnotationSpec)
+                    .returns(returnType);
+            List<RouterElement> routerElementList = routerMap.get(typeElement);
+            for (RouterElement routerElement : routerElementList) {
+                String value = routerElement.getValue();
+                RouterType type = routerElement.getType();
+                AnnotationSpec annotationSpec = AnnotationSpec.builder(RouterKey.class)
+                        .addMember("value", "\"" + value + "\"")
+                        .build();
+                String paramName = value.substring(0, 1).toUpperCase() + value.substring(1, value.length());
+                ParameterSpec parameterSpec = ParameterSpec.builder(convert(type), "r" + paramName)
+                        .addAnnotation(annotationSpec)
+                        .build();
+                methodBuild.addParameter(parameterSpec);
+            }
+            routerServiceClassBuilder.addMethod(methodBuild.build());
+        }
+
+    }
+
+    private Map<TypeElement, List<RouterElement>> scanAutoRouter(RoundEnvironment roundEnv) {
+        Map<TypeElement, List<RouterElement>> routerMap = new HashMap<>();
         for (Element element : roundEnv.getElementsAnnotatedWith(AutoRouter.class)) {
             if(element.getKind() == ElementKind.CLASS) {
                 TypeElement typeElement = (TypeElement) element;
-                RouterElement routerElement = new RouterElement(AutoRouter.class,
-                        new String[]{});
-                intoMap(result, typeElement, routerElement);
+                System.out.println(typeElement.getSimpleName());
+                String[] value = typeElement.getAnnotation(AutoRouter.class).value();
+                RouterType[] type = typeElement.getAnnotation(AutoRouter.class).type();
+                // TODO: 2017/9/22 check value and type 
+                List<RouterElement> routerElementList = new ArrayList<>(value.length);
+                for (int i = 0; i < value.length; ++i) {
+                    RouterElement routerElement = new RouterElement(value[i], type[i]);
+                    routerElementList.add(routerElement);
+                }
+                routerMap.put(typeElement, routerElementList);
             }
         }
-        //  1
-        for (Element element : roundEnv.getElementsAnnotatedWith(RequestInt.class)) {
-            if(element.getKind() == ElementKind.CLASS) {
-                TypeElement typeElement = (TypeElement) element;
-                RouterElement routerElement = new RouterElement(RequestInt.class,
-                        typeElement.getAnnotation(RequestInt.class).value());
-                intoMap(result, typeElement, routerElement);
-            }
-        }
-        //  2
-        for (Element element : roundEnv.getElementsAnnotatedWith(RequestString.class)) {
-            if(element.getKind() == ElementKind.CLASS) {
-                TypeElement typeElement = (TypeElement) element;
-                RouterElement routerElement = new RouterElement(RequestString.class,
-                        typeElement.getAnnotation(RequestString.class).value());
-                intoMap(result, typeElement, routerElement);
-            }
-        }
-        //  3
-        for (Element element : roundEnv.getElementsAnnotatedWith(RequestByte.class)) {
-            if(element.getKind() == ElementKind.CLASS) {
-                TypeElement typeElement = (TypeElement) element;
-                RouterElement routerElement = new RouterElement(RequestByte.class,
-                        typeElement.getAnnotation(RequestByte.class).value());
-                intoMap(result, typeElement, routerElement);
-            }
-        }
-        //  4
-        for (Element element : roundEnv.getElementsAnnotatedWith(RequestBoolean.class)) {
-            if(element.getKind() == ElementKind.CLASS) {
-                TypeElement typeElement = (TypeElement) element;
-                RouterElement routerElement = new RouterElement(RequestBoolean.class,
-                        typeElement.getAnnotation(RequestBoolean.class).value());
-                intoMap(result, typeElement, routerElement);
-            }
-        }
-        //  5
-        for (Element element : roundEnv.getElementsAnnotatedWith(RequestChar.class)) {
-            if(element.getKind() == ElementKind.CLASS) {
-                TypeElement typeElement = (TypeElement) element;
-                RouterElement routerElement = new RouterElement(RequestChar.class,
-                        typeElement.getAnnotation(RequestChar.class).value());
-                intoMap(result, typeElement, routerElement);
-            }
-        }
-        //  6
-        for (Element element : roundEnv.getElementsAnnotatedWith(RequestShort.class)) {
-            if(element.getKind() == ElementKind.CLASS) {
-                TypeElement typeElement = (TypeElement) element;
-                RouterElement routerElement = new RouterElement(RequestShort.class,
-                        typeElement.getAnnotation(RequestShort.class).value());
-                intoMap(result, typeElement, routerElement);
-            }
-        }
-        //  7
-        for (Element element : roundEnv.getElementsAnnotatedWith(RequestLong.class)) {
-            if(element.getKind() == ElementKind.CLASS) {
-                TypeElement typeElement = (TypeElement) element;
-                RouterElement routerElement = new RouterElement(RequestLong.class,
-                        typeElement.getAnnotation(RequestLong.class).value());
-                intoMap(result, typeElement, routerElement);
-            }
-        }
-        //  8
-        for (Element element : roundEnv.getElementsAnnotatedWith(RequestFloat.class)) {
-            if(element.getKind() == ElementKind.CLASS) {
-                TypeElement typeElement = (TypeElement) element;
-                RouterElement routerElement = new RouterElement(RequestFloat.class,
-                        typeElement.getAnnotation(RequestFloat.class).value());
-                intoMap(result, typeElement, routerElement);
-            }
-        }
-        //  9
-        for (Element element : roundEnv.getElementsAnnotatedWith(RequestDouble.class)) {
-            if(element.getKind() == ElementKind.CLASS) {
-                TypeElement typeElement = (TypeElement) element;
-                RouterElement routerElement = new RouterElement(RequestDouble.class,
-                        typeElement.getAnnotation(RequestDouble.class).value());
-                intoMap(result, typeElement, routerElement);
-            }
-        }
-        return result;
+        return routerMap;
     }
 
-    private void intoMap(Map<TypeElement, Set<RouterElement>> result, TypeElement key, RouterElement value) {
-        if(result.containsKey(key)) {
-            result.get(key).add(value);
-        } else {
-            Set<RouterElement> tempSet = new HashSet<>();
-            tempSet.add(value);
-            result.put(key, tempSet);
+    private Map<TypeElement, List<ExtraElement>> scanAutoExtra(RoundEnvironment roundEnv) {
+        Map<TypeElement, List<ExtraElement>> extraMap = new HashMap<>();
+        for (Element element : roundEnv.getElementsAnnotatedWith(AutoExtra.class)) {
+            if(element.getKind() == ElementKind.FIELD) {
+                VariableElement fieldElement = (VariableElement) element;
+                String fieldName = fieldElement.getSimpleName().toString();
+                TypeElement typeElement = (TypeElement) fieldElement.getEnclosingElement();
+                String value = fieldElement.getAnnotation(AutoExtra.class).value();
+                ExtraElement extraElement = new ExtraElement(value, fieldName, fieldElement.asType());
+                List<ExtraElement> routerElementList = extraMap.get(typeElement);
+                if(routerElementList == null) {
+                    List<ExtraElement> extraElementList = new ArrayList<>();
+                    extraElementList.add(extraElement);
+                    extraMap.put(typeElement, extraElementList);
+                } else {
+                    List<ExtraElement> extraElementList = extraMap.get(typeElement);
+                    extraElementList.add(extraElement);
+                }
+            }
         }
+        return extraMap;
     }
 
     @Override
     public Set<String> getSupportedAnnotationTypes() {
         LinkedHashSet<String> annotations = new LinkedHashSet<>();
         annotations.add(AutoRouter.class.getCanonicalName());
-        annotations.add(RequestBoolean.class.getCanonicalName());
-        annotations.add(RequestByte.class.getCanonicalName());
-        annotations.add(RequestChar.class.getCanonicalName());
-        annotations.add(RequestShort.class.getCanonicalName());
-        annotations.add(RequestInt.class.getCanonicalName());
-        annotations.add(RequestLong.class.getCanonicalName());
-        annotations.add(RequestFloat.class.getCanonicalName());
-        annotations.add(RequestDouble.class.getCanonicalName());
-        annotations.add(RequestString.class.getCanonicalName());
+        annotations.add(AutoExtra.class.getCanonicalName());
         return annotations;
     }
 

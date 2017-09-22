@@ -97,7 +97,6 @@ public class Router {
 
     private Intent putExtra(RouterMethod routerMethod, Object[] objects) {
         Intent intent = new Intent(mActivity, routerMethod.getToActivity());
-
         Parameter[] parameters = routerMethod.getParameters();
         for (int i = 0; i < parameters.length; i++) {
             Parameter p = parameters[i];
@@ -134,23 +133,25 @@ public class Router {
         return intent;
     }
 
-    public Router inject() {
+    private Router inject() {
         String injectClass = mActivity.getClass().getName() + "_RouterInject";
         try {
             Constructor<?> constructor = mActivity.getClassLoader()
                     .loadClass(injectClass)
                     .getConstructor(mActivity.getClass());
             constructor.newInstance(mActivity);
-        } catch (InstantiationException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException | 
+        } catch (InstantiationException | NoSuchMethodException | InvocationTargetException | 
                 IllegalAccessException e) {
             e.printStackTrace();
+            return this;
+        }catch (ClassNotFoundException e){
             return this;
         }
         return this;
     }
 
     public static Router init(Activity activity) {
-        return new Router(activity);
+        return new Router(activity).inject();
     }
 
 

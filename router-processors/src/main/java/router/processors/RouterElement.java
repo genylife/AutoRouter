@@ -1,47 +1,28 @@
 package router.processors;
 
-import java.lang.annotation.Annotation;
+import router.RouterType;
 
 /**
- * Created by DingZhu on 2017/9/7.
+ * Created by DingZhu on 2017/9/22.
  *
  * @since 1.0.0
  */
 
-public class RouterElement {
+final class RouterElement {
 
-    private Class<? extends Annotation> mAnnotation;
-    private String[] mValue;
+    private String value;
+    private RouterType type;
 
-    public RouterElement(Class<? extends Annotation> annotation, String[] value) {
-        mAnnotation = annotation;
-        mValue = value;
+    RouterElement(String value, RouterType type) {
+        this.value = value;
+        this.type = type;
     }
 
-    /*@Override
-    public boolean equals(Object obj) {
-        if(obj instanceof RouterElement) {
-            RouterElement element = (RouterElement) obj;
-            return mAnnotation.getCanonicalName().equals(element.mAnnotation.getCanonicalName())
-                    && (Arrays.equals(mValue, element.mValue));
-        } else {
-            return false;
-        }
-    }*/
-
-    public Class<? extends Annotation> getAnnotation() {
-        return mAnnotation;
+    String getValue() {
+        return value;
     }
 
-    public void setAnnotation(Class<? extends Annotation> annotation) {
-        mAnnotation = annotation;
-    }
-
-    public String[] getValue() {
-        return mValue;
-    }
-
-    public void setValue(String[] value) {
-        mValue = value;
+    RouterType getType() {
+        return type;
     }
 }

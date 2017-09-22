@@ -1,4 +1,4 @@
-package router.injector;
+package router;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 @Documented
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.CLASS)
-public @interface InjectDoubleExtra {
-    String key();
-    double defaultValue();
+public @interface AutoExtra {
+
+    String value() default "";
 }

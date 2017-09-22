@@ -7,48 +7,27 @@ import android.widget.TextView;
 
 import java.util.Locale;
 
+import router.AutoExtra;
 import router.Router;
 import router.RouterService;
-import router.request.RequestBoolean;
-import router.request.RequestByte;
-import router.request.RequestChar;
-import router.request.RequestDouble;
-import router.request.RequestFloat;
-import router.request.RequestInt;
-import router.request.RequestLong;
-import router.request.RequestShort;
-import router.request.RequestString;
-import router.injector.InjectBooleanExtra;
-import router.injector.InjectByteExtra;
-import router.injector.InjectCharExtra;
-import router.injector.InjectDoubleExtra;
-import router.injector.InjectFloatExtra;
-import router.injector.InjectIntExtra;
-import router.injector.InjectLongExtra;
-import router.injector.InjectShortExtra;
-import router.injector.InjectStringExtra;
+import router.AutoRouter;
+import router.RouterType;
 
 
-@RequestInt("in")
-@RequestString("st")
-@RequestBoolean("bo")
-@RequestByte("by")
-@RequestShort("sh")
-@RequestChar("ch")
-@RequestLong("lo")
-@RequestFloat("fl")
-@RequestDouble("dou")
+@AutoRouter(value = {"in", "st", "bo", "by", "sh", "ch", "lo", "fl", "dou"},
+        type = {RouterType.INT, RouterType.STRING, RouterType.BOOLEAN, RouterType.BYTE, RouterType.SHORT, RouterType.CHAR,
+                RouterType.LONG, RouterType.FLOAT, RouterType.DOUBLE})
 public class MainActivity extends AppCompatActivity {
 
-    @InjectIntExtra(key = "in", defaultValue = -1) int mInt;
-    @InjectBooleanExtra(key = "bo", defaultValue = false) boolean mBoolean;
-    @InjectByteExtra(key = "by", defaultValue = 'a') byte mByte;
-    @InjectCharExtra(key = "ch", defaultValue = 98) char mChar;
-    @InjectShortExtra(key = "sh", defaultValue = 6) short mShort;
-    @InjectLongExtra(key = "lo", defaultValue = 9999999999L) long mLong;
-    @InjectFloatExtra(key = "fl", defaultValue = 2.2F) float mFloat;
-    @InjectDoubleExtra(key = "dou", defaultValue = 4.4D) double mDouble;
-    @InjectStringExtra(key = "st") String mString;
+    @AutoExtra("in") int mInt;
+    @AutoExtra("bo") boolean mBoolean;
+    @AutoExtra("by") byte mByte;
+    @AutoExtra("ch") char mChar;
+    @AutoExtra("sh") short mShort;
+    @AutoExtra("lo") long mLong;
+    @AutoExtra("fl") float mFloat;
+    @AutoExtra("dou") double mDouble;
+    @AutoExtra("st") String mString;
 
 
     @Override
@@ -56,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        RouterService service = Router.init(this).inject().create(RouterService.class);
+        RouterService service = Router.init(this).create(RouterService.class);
 
         String format = "mInt =%d\nmBoolean =%b\nmByte =%d\nmChar =%c\nmShort =%d\nmLong =%d\nmFloat =%f\nmDouble =%f\nmString " +
                 "=%s";
@@ -68,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
         Bundle bundle = new Bundle();
 
         //1, ((short) 2), ((short) 3), true, false, ((byte) 98), 'c'
-        service.cActivity(1, ((short) 2), ((short) 3), true, false, ((byte) 98), 'c')
+        service.cActivity(1, ((short) 2), ((short) 3), true, false, ((char) 98), ((byte) 33))
                 .go();
     }
 }

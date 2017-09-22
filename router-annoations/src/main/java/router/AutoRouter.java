@@ -1,4 +1,4 @@
-package router.injector;
+package router;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -7,9 +7,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Documented
-@Target(ElementType.FIELD)
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.CLASS)
-public @interface InjectStringExtra {
+public @interface AutoRouter {
 
-    String key();
+    String[] value() default {};
+
+    RouterType[] type() default {};
+
 }
