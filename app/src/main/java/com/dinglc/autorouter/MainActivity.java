@@ -11,23 +11,20 @@ import router.AutoExtra;
 import router.AutoRouter;
 import router.Router;
 import router.RouterService;
-import router.RouterType;
 
 
-@AutoRouter(value = {"in", "st", "bo", "by", "sh", "ch", "lo", "fl", "dou"},
-        type = {RouterType.INT, RouterType.STRING, RouterType.BOOLEAN, RouterType.BYTE, RouterType.SHORT, RouterType.CHAR,
-                RouterType.LONG, RouterType.FLOAT, RouterType.DOUBLE})
+@AutoRouter
 public class MainActivity extends AppCompatActivity {
 
-    @AutoExtra int mInt;
-    @AutoExtra boolean mBoolean;
-    @AutoExtra byte mByte;
-    @AutoExtra char mChar;
-    @AutoExtra short mShort;
-    @AutoExtra long mLong;
-    @AutoExtra float mFloat;
-    @AutoExtra double mDouble;
-    @AutoExtra String mString;
+    @AutoExtra("in") int mInt;
+    @AutoExtra("st") String mString;
+    @AutoExtra("bo") boolean mBoolean;
+    @AutoExtra("by") byte mByte;
+    @AutoExtra("sh") short mShort;
+    @AutoExtra("ch") char mChar;
+    @AutoExtra("lo") long mLong;
+    @AutoExtra("fl") float mFloat;
+    @AutoExtra("dou") double mDouble;
 
 
     @Override
@@ -45,10 +42,9 @@ public class MainActivity extends AppCompatActivity {
 
         Intent intent = new Intent(this, BActivity.class);
         Bundle bundle = new Bundle();
-startActivity(intent,bundle);
-        
-        //1, ((short) 2), ((short) 3), true, false, ((byte) 98), 'c'
-        service.cActivity(1, ((short) 2), ((short) 3), true, false, ((char) 98), ((byte) 33))
+        //startActivity(intent,bundle);
+
+        service.cActivity(1, ((short) 2), ((short) 3), true, ((byte) 33), ((char) 98), false)
                 .go();
     }
 }

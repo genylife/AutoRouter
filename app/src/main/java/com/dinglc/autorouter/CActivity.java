@@ -8,17 +8,14 @@ import android.widget.TextView;
 import java.util.Locale;
 
 import router.AutoExtra;
+import router.AutoRouter;
 import router.Router;
 import router.RouterService;
-import router.AutoRouter;
-import router.RouterType;
 
-@AutoRouter(value = {"a", "b", "d", "f", "r", "w", "v"},
-        type = {RouterType.INT, RouterType.SHORT, RouterType.SHORT, RouterType.BOOLEAN, RouterType.BOOLEAN, RouterType.CHAR, 
-                RouterType.BYTE})
+@AutoRouter
 public class CActivity extends AppCompatActivity {
 
-    @AutoExtra int a;
+    @AutoExtra("a") int a;
     @AutoExtra("b") short b;
     @AutoExtra("d") short d;
     @AutoExtra("f") boolean f;

@@ -11,8 +11,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.CLASS)
 public @interface AutoRouter {
 
-    String[] value() default {};
-
-    RouterType[] type() default {};
-
+    String value() default "";
 }

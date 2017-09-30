@@ -37,7 +37,6 @@ import router.AutoExtra;
 import router.AutoRouter;
 import router.RouterClass;
 import router.RouterKey;
-import router.RouterType;
 
 @AutoService(Processor.class)
 public class RouterProcessor extends AbstractProcessor {
@@ -55,40 +54,16 @@ public class RouterProcessor extends AbstractProcessor {
                 .addModifiers(Modifier.PUBLIC);
     }
 
-
-    private TypeName convert(RouterType type) {
-        switch (type) {
-            case CHAR:
-                return TypeName.CHAR;
-            case BOOLEAN:
-                return TypeName.BOOLEAN;
-            case BYTE:
-                return TypeName.BYTE;
-            case SHORT:
-                return TypeName.SHORT;
-            case INT:
-                return TypeName.INT;
-            case LONG:
-                return TypeName.LONG;
-            case FLOAT:
-                return TypeName.FLOAT;
-            case DOUBLE:
-                return TypeName.DOUBLE;
-            case STRING:
-            default:
-                return ClassName.get(String.class);
-        }
-    }
-
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        Map<TypeElement, List<RouterElement>> routerMap = scanAutoRouter(roundEnv);
+        Map<TypeElement, RouterElement> routerMap = scanAutoRouter(roundEnv);
+        boolean bool = scanAutoExtra(roundEnv, routerMap);
+        if(!bool) return false;
         genMethods(routerMap);
-        
-        Map<TypeElement, List<ExtraElement>> extraMap = scanAutoExtra(roundEnv, routerMap);
-        if(extraMap==null) return true;
 
-        genExtraClass(extraMap);
+        if(routerMap == null) return false;
+
+        genExtraClass(routerMap);
 
         JavaFile.Builder builder = JavaFile.builder("router", routerServiceClassBuilder.build());
         JavaFile javaFile = builder.build();
@@ -100,7 +75,6 @@ public class RouterProcessor extends AbstractProcessor {
 
         return true;
     }
-
 
     private Object genDefValue(TypeMirror type) {
         switch (type.getKind()) {
@@ -124,8 +98,8 @@ public class RouterProcessor extends AbstractProcessor {
         }
     }
 
-    private void genExtraClass(Map<TypeElement, List<ExtraElement>> extraMap) {
-        for (TypeElement typeElement : extraMap.keySet()) {
+    private void genExtraClass(Map<TypeElement, RouterElement> routerMap) {
+        for (TypeElement typeElement : routerMap.keySet()) {
             String packageName = typeElement.getEnclosingElement().toString();
             MethodSpec constructorMethodSpec = MethodSpec.constructorBuilder()
                     .addParameter(ClassName.get(packageName, typeElement.getSimpleName().toString()), "activity")
@@ -133,44 +107,49 @@ public class RouterProcessor extends AbstractProcessor {
                     .addStatement("inject()")
                     .build();
             MethodSpec.Builder injectMethodBuilder = MethodSpec.methodBuilder("inject")
-                    .addModifiers(Modifier.PRIVATE);
-            List<ExtraElement> extraElementList = extraMap.get(typeElement);
-            for (ExtraElement extraElement : extraElementList) {
-                TypeMirror type = extraElement.getType();
-                TypeKind typeKind = type.getKind();
-                String methodName = typeKind.name().toLowerCase();
-                String sub1 = methodName.substring(1, methodName.length());
-                String sub0 = methodName.substring(0, 1).toUpperCase();
-                methodName = sub0 + sub1;
+                    .addModifiers(Modifier.PRIVATE)
+                    .addStatement("$T intent = mActivity.getIntent()",
+                            ClassName.get("android.content", "Intent"));
+            RouterElement routerElement = routerMap.get(typeElement);
+            List<ExtraElement> extraElementList = routerElement.getExtraElement();
+            if(extraElementList != null) {
+                for (ExtraElement extraElement : extraElementList) {
+                    TypeMirror type = extraElement.getType();
+                    TypeKind typeKind = type.getKind();
+                    String methodName = typeKind.name().toLowerCase();
+                    String sub1 = methodName.substring(1, methodName.length());
+                    String sub0 = methodName.substring(0, 1).toUpperCase();
+                    methodName = sub0 + sub1;
 
-
-                if(typeKind == TypeKind.DECLARED) {
-                    injectMethodBuilder.addStatement("mActivity.$L = mActivity.getIntent().get$LExtra(\"$L\")",
-                            extraElement.getFieldName(), "String", extraElement.getValue());
-                } else if(typeKind == TypeKind.BYTE || typeKind == TypeKind.SHORT || typeKind == TypeKind.CHAR) {
-                    injectMethodBuilder.addStatement("mActivity.$L = mActivity.getIntent().get$LExtra(\"$L\", $L)",
-                            extraElement.getFieldName(), methodName, extraElement.getValue(), genDefValue(type));
-                } else {
-                    injectMethodBuilder.addStatement("mActivity.$L = mActivity.getIntent().get$LExtra(\"$L\", $L)",
-                            extraElement.getFieldName(), methodName, extraElement.getValue(), genDefValue(type));
+                    if(typeKind == TypeKind.DECLARED) {
+                        injectMethodBuilder.addStatement("mActivity.$L = intent.get$LExtra($S)",
+                                extraElement.getFieldName(), "String", extraElement.getValue());
+                    } else if(typeKind == TypeKind.BYTE || typeKind == TypeKind.SHORT || typeKind == TypeKind.CHAR) {
+                        injectMethodBuilder.addStatement("mActivity.$L = intent.get$LExtra($S, $L)",
+                                extraElement.getFieldName(), methodName, extraElement.getValue(), genDefValue(type));
+                    } else {
+                        injectMethodBuilder.addStatement("mActivity.$L = intent.get$LExtra($S, $L)",
+                                extraElement.getFieldName(), methodName, extraElement.getValue(), genDefValue(type));
+                    }
                 }
-            }
-            TypeSpec.Builder typeSpecBuilder = TypeSpec.classBuilder(typeElement.getSimpleName() + "_RouterInject")
-                    .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                    .addMethod(injectMethodBuilder.build())
-                    .addField(ClassName.get(packageName, typeElement.getSimpleName().toString()), "mActivity")
-                    .addMethod(constructorMethodSpec);
-            JavaFile javaFile = JavaFile.builder(packageName, typeSpecBuilder.build())
-                    .build();
-            try {
-                javaFile.writeTo(mFiler);
-            } catch (IOException e) {
-                e.printStackTrace();
+
+                TypeSpec.Builder typeSpecBuilder = TypeSpec.classBuilder(typeElement.getSimpleName() + "_RouterInject")
+                        .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                        .addMethod(injectMethodBuilder.build())
+                        .addField(ClassName.get(packageName, typeElement.getSimpleName().toString()), "mActivity")
+                        .addMethod(constructorMethodSpec);
+                JavaFile javaFile = JavaFile.builder(packageName, typeSpecBuilder.build())
+                        .build();
+                try {
+                    javaFile.writeTo(mFiler);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
 
-    private void genMethods(Map<TypeElement, List<RouterElement>> routerMap) {
+    private void genMethods(Map<TypeElement, RouterElement> routerMap) {
         for (TypeElement typeElement : routerMap.keySet()) {
             AnnotationSpec methodAnnotationSpec = AnnotationSpec.builder(RouterClass.class)
                     .addMember("value", "\"" + typeElement.getQualifiedName().toString() + "\"")
@@ -182,94 +161,72 @@ public class RouterProcessor extends AbstractProcessor {
                     .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                     .addAnnotation(methodAnnotationSpec)
                     .returns(returnType);
-            List<RouterElement> routerElementList = routerMap.get(typeElement);
-            for (RouterElement routerElement : routerElementList) {
-                String value = routerElement.getValue();
-                RouterType type = routerElement.getType();
-                AnnotationSpec annotationSpec = AnnotationSpec.builder(RouterKey.class)
-                        .addMember("value", "\"" + value + "\"")
-                        .build();
-                String paramName = value.substring(0, 1).toUpperCase() + value.substring(1, value.length());
-                ParameterSpec parameterSpec = ParameterSpec.builder(convert(type), "r" + paramName)
-                        .addAnnotation(annotationSpec)
-                        .build();
-                methodBuild.addParameter(parameterSpec);
+            RouterElement routerElement = routerMap.get(typeElement);
+            List<ExtraElement> extraElements = routerElement.getExtraElement();
+            if(extraElements != null) {
+                for (ExtraElement element : extraElements) {
+                    String value = element.getValue();
+                    TypeMirror type = element.getType();
+                    AnnotationSpec annotationSpec = AnnotationSpec.builder(RouterKey.class)
+                            .addMember("value", "\"" + value + "\"")
+                            .build();
+                    String paramName = value.substring(0, 1).toUpperCase() + value.substring(1, value.length());
+                    ParameterSpec parameterSpec = ParameterSpec.builder(ClassName.get(type), "r" + paramName)
+                            .addAnnotation(annotationSpec)
+                            .build();
+                    methodBuild.addParameter(parameterSpec);
+                }
             }
             routerServiceClassBuilder.addMethod(methodBuild.build());
         }
 
     }
 
-    private Map<TypeElement, List<RouterElement>> scanAutoRouter(RoundEnvironment roundEnv) {
-        Map<TypeElement, List<RouterElement>> routerMap = new HashMap<>();
+    private Map<TypeElement, RouterElement> scanAutoRouter(RoundEnvironment roundEnv) {
+        Map<TypeElement, RouterElement> routerMap = new HashMap<>();
         for (Element element : roundEnv.getElementsAnnotatedWith(AutoRouter.class)) {
             if(element.getKind() == ElementKind.CLASS) {
                 TypeElement typeElement = (TypeElement) element;
                 System.out.println(typeElement.getSimpleName());
-                String[] value = typeElement.getAnnotation(AutoRouter.class).value();
-                RouterType[] type = typeElement.getAnnotation(AutoRouter.class).type();
+                String value = typeElement.getAnnotation(AutoRouter.class).value();
                 // TODO: 2017/9/22 check value and type 
-                List<RouterElement> routerElementList = new ArrayList<>(value.length);
-                for (int i = 0; i < value.length; ++i) {
-                    RouterElement routerElement = new RouterElement(value[i], type[i]);
-                    routerElementList.add(routerElement);
-                }
-                routerMap.put(typeElement, routerElementList);
+                RouterElement routerElement = new RouterElement(value);
+                routerMap.put(typeElement, routerElement);
             }
         }
         return routerMap;
     }
 
-    private Map<TypeElement, List<ExtraElement>> scanAutoExtra(RoundEnvironment roundEnv, Map<TypeElement,
-            List<RouterElement>> routerMap) {
-        Map<TypeElement, List<ExtraElement>> extraMap = new HashMap<>();
+    private boolean scanAutoExtra(RoundEnvironment roundEnv, Map<TypeElement, RouterElement> routerMap) {
         for (Element element : roundEnv.getElementsAnnotatedWith(AutoExtra.class)) {
             if(element.getKind() == ElementKind.FIELD) {
                 VariableElement fieldElement = (VariableElement) element;
                 String fieldName = fieldElement.getSimpleName().toString();
                 TypeElement typeElement = (TypeElement) fieldElement.getEnclosingElement();
+                if(!routerMap.containsKey(typeElement)) {
+                    mMessager.printMessage(Diagnostic.Kind.ERROR, "please check "
+                            + typeElement.getSimpleName() + "is with annotation 'AutoRouter' !", typeElement);
+                    return false;
+                }
                 String value = fieldElement.getAnnotation(AutoExtra.class).value();
                 TypeMirror typeMirror = fieldElement.asType();
 
                 if(value.equals("")) {
-                    List<RouterElement> routerElementList = routerMap.get(typeElement);
-                    List<RouterElement> sameType = new ArrayList<>();
-                    for (RouterElement routerElement : routerElementList) {
-                        if(typeMirror.getKind().ordinal() == routerElement.getType().ordinal() ||
-                                (typeMirror.getKind().ordinal() == TypeKind.DECLARED.ordinal()
-                                        && routerElement.getType().ordinal() == RouterType.STRING.ordinal())) {
-                            sameType.add(routerElement);
-                        }
-                    }
-                    if(sameType.size() == 0) {
-                        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "can not find any key to inject this " +
-                                "field! please see the field '" + fieldName + "'", fieldElement);
-                        return null;
-                    } else {
-                        if(sameType.size() > 1) {
-                            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "find one more key to inject this " +
-                                    "field,but cannot to select what " + "one!please see the field '" + fieldName + "'", 
-                                    fieldElement);
-                            return null;
-                        } else {
-                            value = sameType.get(0).getValue();
-                        }
-                    }
+                    mMessager.printMessage(Diagnostic.Kind.ERROR, "AutoExtra annotation can not be ''!", typeElement);
+                    return false;
                 }
 
-                ExtraElement extraElement = new ExtraElement(value, fieldName, typeMirror);
-                List<ExtraElement> routerElementList = extraMap.get(typeElement);
-                if(routerElementList == null) {
-                    List<ExtraElement> extraElementList = new ArrayList<>();
-                    extraElementList.add(extraElement);
-                    extraMap.put(typeElement, extraElementList);
-                } else {
-                    List<ExtraElement> extraElementList = extraMap.get(typeElement);
-                    extraElementList.add(extraElement);
+                RouterElement routerElement = routerMap.get(typeElement);
+                List<ExtraElement> extraElements = routerElement.getExtraElement();
+                if(extraElements == null) {
+                    extraElements = new ArrayList<>();
                 }
+                ExtraElement extraElement = new ExtraElement(value, fieldName, typeMirror);
+                extraElements.add(extraElement);
+                routerElement.setExtraElement(extraElements);
             }
         }
-        return extraMap;
+        return true;
     }
 
     @Override
@@ -279,7 +236,6 @@ public class RouterProcessor extends AbstractProcessor {
         annotations.add(AutoExtra.class.getCanonicalName());
         return annotations;
     }
-
 
     @Override
     public SourceVersion getSupportedSourceVersion() {

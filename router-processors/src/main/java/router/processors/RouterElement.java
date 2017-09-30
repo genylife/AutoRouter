@@ -1,6 +1,6 @@
 package router.processors;
 
-import router.RouterType;
+import java.util.List;
 
 /**
  * Created by DingZhu on 2017/9/22.
@@ -11,18 +11,21 @@ import router.RouterType;
 final class RouterElement {
 
     private String value;
-    private RouterType type;
+    private List<ExtraElement> extraElement;
 
-    RouterElement(String value, RouterType type) {
+    RouterElement(String value) {
         this.value = value;
-        this.type = type;
     }
 
     String getValue() {
         return value;
     }
 
-    RouterType getType() {
-        return type;
+    public List<ExtraElement> getExtraElement() {
+        return extraElement;
+    }
+
+    public void setExtraElement(List<ExtraElement> extraElement) {
+        this.extraElement = extraElement;
     }
 }

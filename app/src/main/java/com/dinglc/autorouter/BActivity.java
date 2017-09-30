@@ -5,9 +5,9 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
+import router.AutoRouter;
 import router.Router;
 import router.RouterService;
-import router.AutoRouter;
 
 @AutoRouter
 public class BActivity extends AppCompatActivity {
