@@ -67,8 +67,33 @@ public class RouterProcessor extends AbstractProcessor {
 
         JavaFile.Builder builder = JavaFile.builder("router", routerServiceClassBuilder.build());
         JavaFile javaFile = builder.build();
+
+        MethodSpec routerInitMethod = MethodSpec.methodBuilder("init")
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .addParameter(ClassName.get("android.app", "Activity"), "activity")
+                .returns(ClassName.get("router", "RouterService"))
+                .addStatement("return _Router.init(activity).create(RouterService.class)")
+                .build();
+        MethodSpec routerInit2Method = MethodSpec.methodBuilder("init")
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .addParameter(ClassName.get("router", "Converter"), "converter")
+                .addParameter(ClassName.get("router", "Parser"), "parser")
+                .addStatement("_Router.setConverter(converter)")
+                .addStatement("_Router.setParser(parser)")
+                .build();
+        MethodSpec routerPrivateConstructor = MethodSpec.constructorBuilder()
+                .addModifiers(Modifier.PRIVATE)
+                .build();
+        TypeSpec routerClass = TypeSpec.classBuilder("Router")
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addMethod(routerInitMethod)
+                .addMethod(routerInit2Method)
+                .addMethod(routerPrivateConstructor)
+                .build();
+        JavaFile routerFile = JavaFile.builder("router", routerClass).build();
         try {
             javaFile.writeTo(mFiler);
+            routerFile.writeTo(mFiler);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -102,8 +127,11 @@ public class RouterProcessor extends AbstractProcessor {
         for (TypeElement typeElement : routerMap.keySet()) {
             String packageName = typeElement.getEnclosingElement().toString();
             MethodSpec constructorMethodSpec = MethodSpec.constructorBuilder()
+                    .addModifiers(Modifier.PUBLIC)
                     .addParameter(ClassName.get(packageName, typeElement.getSimpleName().toString()), "activity")
+                    .addParameter(ClassName.get("router", "Parser"), "parser")
                     .addStatement("mActivity = activity")
+                    .addStatement("mParser = parser")
                     .addStatement("inject()")
                     .build();
             MethodSpec.Builder injectMethodBuilder = MethodSpec.methodBuilder("inject")
@@ -122,8 +150,15 @@ public class RouterProcessor extends AbstractProcessor {
                     methodName = sub0 + sub1;
 
                     if(typeKind == TypeKind.DECLARED) {
-                        injectMethodBuilder.addStatement("mActivity.$L = intent.get$LExtra($S)",
-                                extraElement.getFieldName(), "String", extraElement.getValue());
+                        if(type.toString().equals("java.lang.String")) {
+                            injectMethodBuilder.addStatement("mActivity.$L = intent.getStringExtra($S)",
+                                    extraElement.getFieldName(), extraElement.getValue());
+                        } else {
+                            injectMethodBuilder.addStatement("$T str = intent.getStringExtra($S)",
+                                    String.class, extraElement.getValue())
+                                    .addStatement("mActivity.$L = mParser.parse(str,$T.class)",
+                                            extraElement.getFieldName(), TypeName.get(type));
+                        }
                     } else if(typeKind == TypeKind.BYTE || typeKind == TypeKind.SHORT || typeKind == TypeKind.CHAR) {
                         injectMethodBuilder.addStatement("mActivity.$L = intent.get$LExtra($S, $L)",
                                 extraElement.getFieldName(), methodName, extraElement.getValue(), genDefValue(type));
@@ -137,6 +172,7 @@ public class RouterProcessor extends AbstractProcessor {
                         .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                         .addMethod(injectMethodBuilder.build())
                         .addField(ClassName.get(packageName, typeElement.getSimpleName().toString()), "mActivity")
+                        .addField(ClassName.get("router", "Parser"), "mParser")
                         .addMethod(constructorMethodSpec);
                 JavaFile javaFile = JavaFile.builder(packageName, typeSpecBuilder.build())
                         .build();

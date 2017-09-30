@@ -10,29 +10,39 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
-public class Router {
+class _Router {
 
     private Activity mActivity;
 
-    private Router(Activity activity) {
+    static void setConverter(Converter converter) {
+        _Router.converter = converter;
+    }
+
+    static void setParser(Parser parser) {
+        _Router.parser = parser;
+    }
+
+    private static Converter converter;
+    private static Parser parser;
+
+    private _Router(Activity activity) {
         mActivity = activity;
+        if(converter == null || parser == null) {
+            throw new IllegalStateException("please call _Router.init(...) in Application onCreate!");
+        }
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T create(Class<T> service) {
-        if(service.getCanonicalName().equals("router.RouterService")) {
-            return (T) Proxy.newProxyInstance(service.getClassLoader(), new Class[]{service},
-                    new InvocationHandler() {
-                        @Override
-                        public Object invoke(Object o, Method method, Object[] objects) throws Throwable {
-                            RouterMethod routerMethod = loadRouterMethod(method, objects);
-                            Intent intent = putExtra(routerMethod, objects);
-                            return new IntentWrapper(mActivity,intent);
-                        }
-                    });
-        } else {
-            throw new IllegalArgumentException("The param must be RouterService.class,but this is not!!");
-        }
+    <T> T create(Class<T> service) {
+        return (T) Proxy.newProxyInstance(service.getClassLoader(), new Class[]{service},
+                new InvocationHandler() {
+                    @Override
+                    public Object invoke(Object o, Method method, Object[] objects) throws Throwable {
+                        RouterMethod routerMethod = loadRouterMethod(method, objects);
+                        Intent intent = putExtra(routerMethod, objects);
+                        return new IntentWrapper(mActivity, intent);
+                    }
+                });
     }
 
     private RouterMethod loadRouterMethod(Method method, Object[] objects) {
@@ -56,41 +66,44 @@ public class Router {
         }
 
         for (int i = 0; i < objects.length; i++) {
+            Parameter parameter = routerMethod.getParameters()[i];
             if(objects[i] instanceof Boolean) {
-                routerMethod.getParameters()[i].setParamType(1);
+                parameter.setParamType(Parameter.Type.TYPE_BOOLEAN);
                 continue;
             }
             if(objects[i] instanceof Byte) {
-                routerMethod.getParameters()[i].setParamType(2);
+                parameter.setParamType(Parameter.Type.TYPE_BYTE);
                 continue;
             }
             if(objects[i] instanceof Character) {
-                routerMethod.getParameters()[i].setParamType(3);
+                parameter.setParamType(Parameter.Type.TYPE_CHAR);
                 continue;
             }
             if(objects[i] instanceof Short) {
-                routerMethod.getParameters()[i].setParamType(4);
+                parameter.setParamType(Parameter.Type.TYPE_SHORT);
                 continue;
             }
             if(objects[i] instanceof Integer) {
-                routerMethod.getParameters()[i].setParamType(5);
+                parameter.setParamType(Parameter.Type.TYPE_INT);
                 continue;
             }
             if(objects[i] instanceof Long) {
-                routerMethod.getParameters()[i].setParamType(6);
+                parameter.setParamType(Parameter.Type.TYPE_LONG);
                 continue;
             }
             if(objects[i] instanceof Float) {
-                routerMethod.getParameters()[i].setParamType(7);
+                parameter.setParamType(Parameter.Type.TYPE_FLOAT);
                 continue;
             }
             if(objects[i] instanceof Double) {
-                routerMethod.getParameters()[i].setParamType(8);
+                parameter.setParamType(Parameter.Type.TYPE_DOUBLE);
                 continue;
             }
             if(objects[i] instanceof String) {
-                routerMethod.getParameters()[i].setParamType(9);
+                parameter.setParamType(Parameter.Type.TYPE_STRING);
+                continue;
             }
+            parameter.setParamType(Parameter.Type.TYPE_OBJECT);
         }
         return routerMethod;
     }
@@ -101,57 +114,59 @@ public class Router {
         for (int i = 0; i < parameters.length; i++) {
             Parameter p = parameters[i];
             switch (p.getParamType()) {
-                case Parameter.ParameterType.TYPE_BOOLEAN:
+                case Parameter.Type.TYPE_BOOLEAN:
                     intent.putExtra(p.getExtraKey(), (boolean) objects[i]);
                     break;
-                case Parameter.ParameterType.TYPE_BYTE:
+                case Parameter.Type.TYPE_BYTE:
                     intent.putExtra(p.getExtraKey(), (byte) objects[i]);
                     break;
-                case Parameter.ParameterType.TYPE_CHAR:
+                case Parameter.Type.TYPE_CHAR:
                     intent.putExtra(p.getExtraKey(), (char) objects[i]);
                     break;
-                case Parameter.ParameterType.TYPE_SHORT:
+                case Parameter.Type.TYPE_SHORT:
                     intent.putExtra(p.getExtraKey(), (short) objects[i]);
                     break;
-                case Parameter.ParameterType.TYPE_INT:
+                case Parameter.Type.TYPE_INT:
                     intent.putExtra(p.getExtraKey(), (int) objects[i]);
                     break;
-                case Parameter.ParameterType.TYPE_LONG:
+                case Parameter.Type.TYPE_LONG:
                     intent.putExtra(p.getExtraKey(), (long) objects[i]);
                     break;
-                case Parameter.ParameterType.TYPE_FLOAT:
+                case Parameter.Type.TYPE_FLOAT:
                     intent.putExtra(p.getExtraKey(), (float) objects[i]);
                     break;
-                case Parameter.ParameterType.TYPE_DOUBLE:
+                case Parameter.Type.TYPE_DOUBLE:
                     intent.putExtra(p.getExtraKey(), (double) objects[i]);
                     break;
-                case Parameter.ParameterType.TYPE_STRING:
+                case Parameter.Type.TYPE_STRING:
                     intent.putExtra(p.getExtraKey(), (String) objects[i]);
                     break;
+                default:
+                    intent.putExtra(p.getExtraKey(), converter.convert(objects[i], objects[i].getClass()));
             }
         }
         return intent;
     }
 
-    private Router inject() {
+    private _Router inject() {
         String injectClass = mActivity.getClass().getName() + "_RouterInject";
         try {
             Constructor<?> constructor = mActivity.getClassLoader()
                     .loadClass(injectClass)
-                    .getConstructor(mActivity.getClass());
-            constructor.newInstance(mActivity);
-        } catch (InstantiationException | NoSuchMethodException | InvocationTargetException | 
+                    .getConstructor(mActivity.getClass(), Parser.class);
+            constructor.newInstance(mActivity, parser);
+        } catch (InstantiationException | NoSuchMethodException | InvocationTargetException |
                 IllegalAccessException e) {
             e.printStackTrace();
             return this;
-        }catch (ClassNotFoundException e){
+        } catch (ClassNotFoundException e) {
             return this;
         }
         return this;
     }
 
-    public static Router init(Activity activity) {
-        return new Router(activity).inject();
+    static _Router init(Activity activity) {
+        return new _Router(activity).inject();
     }
 
 

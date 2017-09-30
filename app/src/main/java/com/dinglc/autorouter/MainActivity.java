@@ -25,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
     @AutoExtra("lo") long mLong;
     @AutoExtra("fl") float mFloat;
     @AutoExtra("dou") double mDouble;
+    @AutoExtra("123") Bean ttt;
 
 
     @Override
@@ -32,17 +33,17 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        RouterService service = Router.init(this).create(RouterService.class);
+        RouterService service = Router.init(this);
 
         String format = "mInt =%d\nmBoolean =%b\nmByte =%d\nmChar =%c\nmShort =%d\nmLong =%d\nmFloat =%f\nmDouble =%f\nmString " +
-                "=%s";
+                "=%s\nttt=%s";
         String format1 = String.format(Locale.CHINA, format, mInt, mBoolean, mByte, mChar, mShort, mLong, mFloat, mDouble,
-                mString);
+                mString, ttt.toString());
         ((TextView) findViewById(R.id.tt)).setText(format1);
 
         Intent intent = new Intent(this, BActivity.class);
         Bundle bundle = new Bundle();
-        //startActivity(intent,bundle);
+        //        startActivity(intent,bundle);
 
         service.cActivity(1, ((short) 2), ((short) 3), true, ((byte) 33), ((char) 98), false)
                 .go();
