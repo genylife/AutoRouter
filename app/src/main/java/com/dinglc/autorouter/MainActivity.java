@@ -7,8 +7,8 @@ import android.widget.TextView;
 
 import java.util.Locale;
 
-import router.AutoExtra;
-import router.AutoRouter;
+import router.annotation.AutoExtra;
+import router.annotation.AutoRouter;
 import router.Router;
 import router.RouterService;
 

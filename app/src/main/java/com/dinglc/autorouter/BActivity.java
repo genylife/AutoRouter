@@ -7,7 +7,7 @@ import android.widget.TextView;
 
 import com.alibaba.fastjson.JSON;
 
-import router.AutoRouter;
+import router.annotation.AutoRouter;
 import router.Converter;
 import router.Parser;
 import router.Router;

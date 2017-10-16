@@ -33,10 +33,10 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 
-import router.AutoExtra;
-import router.AutoRouter;
-import router.RouterClass;
-import router.RouterKey;
+import router.annotation.AutoExtra;
+import router.annotation.AutoRouter;
+import router.annotation.RouterClass;
+import router.annotation.RouterKey;
 
 @AutoService(Processor.class)
 public class RouterProcessor extends AbstractProcessor {

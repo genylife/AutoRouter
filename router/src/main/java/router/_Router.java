@@ -9,10 +9,21 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.lang.reflect.Type;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import router.annotation.RouterClass;
+import router.annotation.RouterKey;
 
 class _Router {
 
+    private final static Map<Method, RouterMethod> routerMethodCache = new ConcurrentHashMap<>();
+
     private Activity mActivity;
+
+    private static Converter converter;
+    private static Parser parser;
 
     static void setConverter(Converter converter) {
         _Router.converter = converter;
@@ -22,9 +33,6 @@ class _Router {
         _Router.parser = parser;
     }
 
-    private static Converter converter;
-    private static Parser parser;
-
     private _Router(Activity activity) {
         mActivity = activity;
         if(converter == null || parser == null) {
@@ -32,8 +40,7 @@ class _Router {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    <T> T create(Class<T> service) {
+    @SuppressWarnings("unchecked") <T> T create(Class<T> service) {
         return (T) Proxy.newProxyInstance(service.getClassLoader(), new Class[]{service},
                 new InvocationHandler() {
                     @Override
@@ -45,14 +52,36 @@ class _Router {
                 });
     }
 
+    private RouterMethod loadRouterMethod(Method method) {
+        RouterMethod result = routerMethodCache.get(method);
+        if(result != null) return result;
+
+        synchronized (routerMethodCache) {
+            result = routerMethodCache.get(method);
+            if(result == null) {
+                result = new RouterMethod(method.getParameterAnnotations().length);
+                String toActivityClass = method.getAnnotation(RouterClass.class).value();
+                try {
+                    Class<?> toActivity = Class.forName(toActivityClass);
+                    result.setToActivity(toActivity);
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+                routerMethodCache.put(method, result);
+            }
+        }
+        return result;
+    }
+
     private RouterMethod loadRouterMethod(Method method, Object[] objects) {
         Annotation[][] parameterAnnotationsArray = method.getParameterAnnotations();
 
         RouterMethod routerMethod = new RouterMethod(parameterAnnotationsArray.length);
 
         String toActivityClass = method.getAnnotation(RouterClass.class).value();
+        Class<?> toActivity;
         try {
-            Class<?> toActivity = Class.forName(toActivityClass);
+            toActivity = Class.forName(toActivityClass);
             routerMethod.setToActivity(toActivity);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
@@ -65,7 +94,33 @@ class _Router {
             routerMethod.getParameters()[i] = parameter;
         }
 
-        for (int i = 0; i < objects.length; i++) {
+        Type[] parameterTypes = method.getGenericParameterTypes();
+        for (Type type : parameterTypes) {
+            if(type == String.class) {
+
+            }
+            switch (type.toString()) {
+                case "boolean":
+                    break;
+                case "byte":
+                    break;
+                case "char":
+                    break;
+                case "int":
+                    break;
+                case "short":
+                    break;
+                case "long":
+                    break;
+                case "float":
+                    break;
+                case "double":
+                    break;
+                default:
+            }
+        }
+
+        /*for (int i = 0; i < objects.length; i++) {
             Parameter parameter = routerMethod.getParameters()[i];
             if(objects[i] instanceof Boolean) {
                 parameter.setParamType(Parameter.Type.TYPE_BOOLEAN);
@@ -104,7 +159,7 @@ class _Router {
                 continue;
             }
             parameter.setParamType(Parameter.Type.TYPE_OBJECT);
-        }
+        }*/
         return routerMethod;
     }
 
@@ -142,6 +197,9 @@ class _Router {
                     intent.putExtra(p.getExtraKey(), (String) objects[i]);
                     break;
                 default:
+                    if(converter == null) {
+                        throw new IllegalStateException("Router.init(...) should be call at app start!");
+                    }
                     intent.putExtra(p.getExtraKey(), converter.convert(objects[i], objects[i].getClass()));
             }
         }
@@ -149,11 +207,15 @@ class _Router {
     }
 
     private _Router inject() {
+        if(converter == null) {
+            throw new IllegalStateException("Router.init(...) should be call at app start!");
+        }
         String injectClass = mActivity.getClass().getName() + "_RouterInject";
         try {
             Constructor<?> constructor = mActivity.getClassLoader()
                     .loadClass(injectClass)
                     .getConstructor(mActivity.getClass(), Parser.class);
+
             constructor.newInstance(mActivity, parser);
         } catch (InstantiationException | NoSuchMethodException | InvocationTargetException |
                 IllegalAccessException e) {
