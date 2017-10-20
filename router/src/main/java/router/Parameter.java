@@ -40,7 +40,8 @@ final class Parameter {
             Type.TYPE_FLOAT,
             Type.TYPE_DOUBLE,
             Type.TYPE_STRING,
-            Type.TYPE_OBJECT
+            Type.TYPE_OBJECT,
+            Type.TYPE_PARCELABLE
     })
     @Retention(RetentionPolicy.SOURCE) @interface ParameterType {
 
@@ -58,5 +59,6 @@ final class Parameter {
         static final int TYPE_DOUBLE = 8;
         static final int TYPE_STRING = 9;
         static final int TYPE_OBJECT = 10;
+        static final int TYPE_PARCELABLE = 11;
     }
 }

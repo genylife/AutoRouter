@@ -19,4 +19,5 @@ public class Bean {
     @Override public String toString() {
         return "ert: " + ert;
     }
+
 }

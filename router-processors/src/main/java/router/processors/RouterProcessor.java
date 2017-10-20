@@ -29,6 +29,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
@@ -150,14 +151,26 @@ public class RouterProcessor extends AbstractProcessor {
                     methodName = sub0 + sub1;
 
                     if(typeKind == TypeKind.DECLARED) {
-                        if(type.toString().equals("java.lang.String")) {
+                        if(type.toString().equals(String.class.getCanonicalName())) {
                             injectMethodBuilder.addStatement("mActivity.$L = intent.getStringExtra($S)",
                                     extraElement.getFieldName(), extraElement.getValue());
                         } else {
-                            injectMethodBuilder.addStatement("$T str = intent.getStringExtra($S)",
-                                    String.class, extraElement.getValue())
-                                    .addStatement("mActivity.$L = mParser.parse(str,$T.class)",
-                                            extraElement.getFieldName(), TypeName.get(type));
+                            List<? extends TypeMirror> interfaces = ((TypeElement) ((DeclaredType) type).asElement())
+                                    .getInterfaces();
+                            boolean isParcel = false;
+                            for (TypeMirror mirror : interfaces) {
+                                if(mirror.toString().equals("android.os.Parcelable")) {
+                                    isParcel = true;
+                                    injectMethodBuilder.addStatement("mActivity.$L = intent.getParcelableExtra($S)",
+                                            extraElement.getFieldName(), extraElement.getValue());
+                                }
+                            }
+                            if(!isParcel) {
+                                injectMethodBuilder.addStatement("$T str = intent.getStringExtra($S)",
+                                        String.class, extraElement.getValue())
+                                        .addStatement("mActivity.$L = mParser.parse(str,$T.class)",
+                                                extraElement.getFieldName(), TypeName.get(type));
+                            }
                         }
                     } else if(typeKind == TypeKind.BYTE || typeKind == TypeKind.SHORT || typeKind == TypeKind.CHAR) {
                         injectMethodBuilder.addStatement("mActivity.$L = intent.get$LExtra($S, $L)",

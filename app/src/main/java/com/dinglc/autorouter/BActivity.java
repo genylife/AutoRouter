@@ -7,10 +7,10 @@ import android.widget.TextView;
 
 import com.alibaba.fastjson.JSON;
 
-import router.annotation.AutoRouter;
 import router.Converter;
 import router.Parser;
 import router.Router;
+import router.annotation.AutoRouter;
 
 @AutoRouter
 public class BActivity extends AppCompatActivity {
