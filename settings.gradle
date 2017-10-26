@@ -1,1 +1,1 @@
-include ':sample', ':router-annoations', ':router-processors', ':router'
+include ':sample', ':router-annotations', ':router-processors', ':router'
