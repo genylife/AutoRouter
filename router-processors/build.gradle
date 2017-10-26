@@ -1,4 +1,6 @@
 apply plugin: 'java-library'
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'com.github.dcendents.android-maven'
 
 dependencies {
     implementation project(':router-annoations')
@@ -7,5 +9,89 @@ dependencies {
     compileOnly files("${System.properties['java.home']}/lib/tools.jar")
 }
 
-//sourceCompatibility = JavaVersion.VERSION_1_7
-//targetCompatibility = JavaVersion.VERSION_1_7
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+version = VERSION //发布版本号
+group = GROUP //最终引用形式，如compile 'com.leon.lfilepicker:1.0.0'，其中lfilepicker在后面配置
+
+bintray {
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.apikey")
+    pkg {
+        repo = REPO//自己创建的仓库名字
+        name = 'autoRouter-compiler'//上传到JCenter的名字,最终引用的名字
+        websiteUrl = SITEURL
+        vcsUrl = GITURL
+        licenses = ['Apache-2.0']//不能随便写，只能是仓库创建时选择的license type
+        userOrg = USERORG //自己创建的organization名称
+        publish = PUBLISH // 是否是公开项目，公开别人可以引用
+
+        version {
+            name = '0.0.1'
+            desc = 'auto router library compiler'//描述，自己定义
+            released  = new Date()
+            vcsTag = 'v0.0.1'
+            attributes = ['gradle-plugin': 'com.use.less:com.use.less.gradle:gradle-useless-plugin']
+        }
+    }
+    configurations = ['archives']
+}
+
+install {
+    repositories.mavenInstaller {
+        // This generates POM.xml with proper parameters
+        pom {
+            project {
+                packaging 'aar'
+                // Add your description here
+                name 'AutoRouter-compiler'
+                description 'android auto router library compiler.'
+                url SITEURL
+                // Set your license
+                licenses {
+                    license {
+                        name 'Apache-2.0' //和之前自己定义的协议一致
+                        url 'https://raw.githubusercontent.com/genylife/AutoRouter/master/LICENSE'
+                    }
+                }
+                developers {
+                    developer {
+                        id 'genylife'        //填写bintray或者github的用户名
+                        name 'qijun'         //姓名
+                        email 'wanqijun@outlook.com'//邮箱
+                    }
+                }
+                scm {
+                    connection GITURL
+                    developerConnection GITURL
+                    url SITEURL
+                }
+            }
+        }
+    }
+}
+task sourcesJar(type: Jar, dependsOn:classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn:javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
+javadoc {
+    options{
+        //如果你的项目里面有中文注释的话，必须将格式设置为UTF-8，不然会出现乱码
+        encoding "UTF-8"
+        charSet 'UTF-8'
+        author true
+        version true
+        links "https://github.com/genylife/AutoRouter"
+    }
+}
