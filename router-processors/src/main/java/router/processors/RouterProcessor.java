@@ -69,7 +69,7 @@ public class RouterProcessor extends AbstractProcessor {
         JavaFile.Builder builder = JavaFile.builder("router", routerServiceClassBuilder.build());
         JavaFile javaFile = builder.build();
 
-        MethodSpec routerInitMethod = MethodSpec.methodBuilder("init")
+        MethodSpec routerInitMethod = MethodSpec.methodBuilder("with")
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .addParameter(ClassName.get("android.app", "Activity"), "activity")
                 .returns(ClassName.get("router", "RouterService"))

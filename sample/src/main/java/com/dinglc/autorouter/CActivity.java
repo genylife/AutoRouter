@@ -30,7 +30,7 @@ public class CActivity extends AppCompatActivity {
         TextView textView = new TextView(this);
         textView.setText("this ia C activity");
         setContentView(textView);
-        RouterService service = Router.init(this);
+        RouterService service = Router.with(this);
         String format = "a =%d\nb =%d\nd =%d\nf =%s\nv =%d\nw =%c\nr =%s";
         String format1 = String.format(Locale.CHINA, format, a, b, d, f, v, w, r);
         textView.setText(format1);
