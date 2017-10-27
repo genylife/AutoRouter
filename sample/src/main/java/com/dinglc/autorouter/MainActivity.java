@@ -9,8 +9,6 @@ import java.util.Locale;
 
 import router.annotation.AutoExtra;
 import router.annotation.AutoRouter;
-import router.Router;
-import router.RouterService;
 
 
 @AutoRouter
@@ -33,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        RouterService service = Router.with(this);
+//        RouterService service = Router.with(this);
 
         String format = "mInt =%d\nmBoolean =%b\nmByte =%d\nmChar =%c\nmShort =%d\nmLong =%d\nmFloat =%f\nmDouble =%f\nmString " +
                 "=%s\nttt=%s";
@@ -45,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
         Bundle bundle = new Bundle();
         //        startActivity(intent,bundle);
 
-        service.cActivity(1, ((short) 2), ((short) 3), true, ((byte) 33), ((char) 98), false)
-                .go();
+//        service.cActivity(1, ((short) 2), ((short) 3), true, ((byte) 33), ((char) 98), false)
+//                .go();
     }
 }

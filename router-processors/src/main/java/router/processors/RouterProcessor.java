@@ -69,13 +69,27 @@ public class RouterProcessor extends AbstractProcessor {
         JavaFile.Builder builder = JavaFile.builder("router", routerServiceClassBuilder.build());
         JavaFile javaFile = builder.build();
 
-        MethodSpec routerInitMethod = MethodSpec.methodBuilder("with")
+        MethodSpec routerMethod1 = MethodSpec.methodBuilder("inject")
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                .addParameter(ClassName.get("android.app", "Activity"), "activity")
-                .returns(ClassName.get("router", "RouterService"))
-                .addStatement("return _Router.init(activity).create(RouterService.class)")
+                .addParameter(ClassName.get("android.content", "Context"), "context")
+                .addStatement("_Router.init(context).inject()")
                 .build();
-        MethodSpec routerInit2Method = MethodSpec.methodBuilder("init")
+        MethodSpec routerMethod2 = MethodSpec.methodBuilder("injectWithCreate")
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .addParameter(ClassName.get("android.content", "Context"), "context")
+                .returns(ClassName.get("router", "RouterService"))
+                .addStatement("_Router r = _Router.init(context)")
+                .addStatement("r.inject()")
+                .addStatement("return r.create(RouterService.class)")
+                .build();
+        MethodSpec routerMethod3 = MethodSpec.methodBuilder("create")
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .addParameter(ClassName.get("android.content", "Context"), "context")
+                .returns(ClassName.get("router", "RouterService"))
+                .addStatement("_Router r = _Router.init(context)")
+                .addStatement("return r.create(RouterService.class)")
+                .build();
+        MethodSpec routerInitMethod = MethodSpec.methodBuilder("init")
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .addParameter(ClassName.get("router", "Converter"), "converter")
                 .addParameter(ClassName.get("router", "Parser"), "parser")
@@ -87,8 +101,10 @@ public class RouterProcessor extends AbstractProcessor {
                 .build();
         TypeSpec routerClass = TypeSpec.classBuilder("Router")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addMethod(routerMethod1)
+                .addMethod(routerMethod2)
+                .addMethod(routerMethod3)
                 .addMethod(routerInitMethod)
-                .addMethod(routerInit2Method)
                 .addMethod(routerPrivateConstructor)
                 .build();
         JavaFile routerFile = JavaFile.builder("router", routerClass).build();
@@ -168,6 +184,10 @@ public class RouterProcessor extends AbstractProcessor {
                             if(!isParcel) {
                                 injectMethodBuilder.addStatement("$T str = intent.getStringExtra($S)",
                                         String.class, extraElement.getValue())
+                                        .addCode("if (mParser == null) {\n")
+                                        .addStatement("throw new IllegalStateException(\" Router.init(...) should be call at " +
+                                                "app start!\")")
+                                        .addCode("}\n")
                                         .addStatement("mActivity.$L = mParser.parse(str,$T.class)",
                                                 extraElement.getFieldName(), TypeName.get(type));
                             }

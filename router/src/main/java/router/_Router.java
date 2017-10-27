@@ -1,6 +1,6 @@
 package router;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Parcelable;
 
@@ -21,7 +21,7 @@ class _Router {
 
     private final static Map<Method, RouterMethod> routerMethodCache = new ConcurrentHashMap<>();
 
-    private Activity mActivity;
+    private Context mContext;
 
     private static Converter converter;
     private static Parser parser;
@@ -34,11 +34,8 @@ class _Router {
         _Router.parser = parser;
     }
 
-    private _Router(Activity activity) {
-        mActivity = activity;
-        if(converter == null || parser == null) {
-            throw new IllegalStateException("please call _Router.init(...) in Application onCreate!");
-        }
+    private _Router(Context activity) {
+        mContext = activity;
     }
 
     @SuppressWarnings("unchecked") <T> T create(Class<T> service) {
@@ -48,7 +45,7 @@ class _Router {
                     public Object invoke(Object o, Method method, Object[] objects) throws Throwable {
                         RouterMethod routerMethod = loadRouterMethod(method);
                         Intent intent = putExtra(routerMethod, objects);
-                        return new IntentWrapper(mActivity, intent);
+                        return new IntentWrapper(mContext, intent);
                     }
                 });
     }
@@ -140,7 +137,7 @@ class _Router {
     }
 
     private Intent putExtra(RouterMethod routerMethod, Object[] objects) {
-        Intent intent = new Intent(mActivity, routerMethod.getToActivity());
+        Intent intent = new Intent(mContext, routerMethod.getToActivity());
         Parameter[] parameters = routerMethod.getParameters();
         for (int i = 0; i < parameters.length; i++) {
             Parameter p = parameters[i];
@@ -186,29 +183,22 @@ class _Router {
         return intent;
     }
 
-    private _Router inject() {
-        if(converter == null) {
-            throw new IllegalStateException("Router.init(...) should be call at app start!");
-        }
-        String injectClass = mActivity.getClass().getName() + "_RouterInject";
+    void inject() {
+        String injectClass = mContext.getClass().getName() + "_RouterInject";
         try {
-            Constructor<?> constructor = mActivity.getClassLoader()
+            Constructor<?> constructor = mContext.getClassLoader()
                     .loadClass(injectClass)
-                    .getConstructor(mActivity.getClass(), Parser.class);
-
-            constructor.newInstance(mActivity, parser);
+                    .getConstructor(mContext.getClass(), Parser.class);
+            constructor.newInstance(mContext, parser);
         } catch (InstantiationException | NoSuchMethodException | InvocationTargetException |
                 IllegalAccessException e) {
             e.printStackTrace();
-            return this;
         } catch (ClassNotFoundException e) {
-            return this;
         }
-        return this;
     }
 
-    static _Router init(Activity activity) {
-        return new _Router(activity).inject();
+    static _Router init(Context activity) {
+        return new _Router(activity);
     }
 
 

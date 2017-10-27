@@ -30,9 +30,9 @@ public class BActivity extends AppCompatActivity {
         TextView textView = new TextView(this);
         textView.setText("this is B activity!");
         setContentView(textView);
-        Router.with(this)
-                .mainActivity(123, "this is a string", true, ((byte) 33),
-                        ((byte) 34), 'c', 9731923719L, 1.3F, 44.556D, new Bean("hehehe"))
-                .go();
+//        Router.with(this)
+//                .mainActivity(123, "this is a string", true, ((byte) 33),
+//                        ((byte) 34), 'c', 9731923719L, 1.3F, 44.556D, new Bean("hehehe"))
+//                .go();
     }
 }
