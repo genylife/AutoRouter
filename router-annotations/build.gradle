@@ -25,5 +25,5 @@ ext {
 dependencies {
     compileOnly files("${System.properties['java.home']}/lib/tools.jar")
 }
-apply from: rootProject.file('gradle/install.gradle')
-apply from: rootProject.file('gradle/bintray.gradle')
+//apply from: rootProject.file('gradle/install.gradle')
+//apply from: rootProject.file('gradle/bintray.gradle')
