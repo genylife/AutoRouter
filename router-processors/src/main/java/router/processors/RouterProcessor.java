@@ -89,13 +89,6 @@ public class RouterProcessor extends AbstractProcessor {
                 .addStatement("_Router r = _Router.init(context)")
                 .addStatement("return r.create(RouterService.class)")
                 .build();
-        MethodSpec routerInitMethod = MethodSpec.methodBuilder("init")
-                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                .addParameter(ClassName.get("router", "Converter"), "converter")
-                .addParameter(ClassName.get("router", "Parser"), "parser")
-                .addStatement("_Router.setConverter(converter)")
-                .addStatement("_Router.setParser(parser)")
-                .build();
         MethodSpec routerPrivateConstructor = MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PRIVATE)
                 .build();
@@ -104,7 +97,6 @@ public class RouterProcessor extends AbstractProcessor {
                 .addMethod(routerMethod1)
                 .addMethod(routerMethod2)
                 .addMethod(routerMethod3)
-                .addMethod(routerInitMethod)
                 .addMethod(routerPrivateConstructor)
                 .build();
         JavaFile routerFile = JavaFile.builder("router", routerClass).build();
@@ -146,9 +138,7 @@ public class RouterProcessor extends AbstractProcessor {
             MethodSpec constructorMethodSpec = MethodSpec.constructorBuilder()
                     .addModifiers(Modifier.PUBLIC)
                     .addParameter(ClassName.get(packageName, typeElement.getSimpleName().toString()), "activity")
-                    .addParameter(ClassName.get("router", "Parser"), "parser")
                     .addStatement("mActivity = activity")
-                    .addStatement("mParser = parser")
                     .addStatement("inject()")
                     .build();
             MethodSpec.Builder injectMethodBuilder = MethodSpec.methodBuilder("inject")
@@ -182,14 +172,8 @@ public class RouterProcessor extends AbstractProcessor {
                                 }
                             }
                             if(!isParcel) {
-                                injectMethodBuilder.addStatement("$T str = intent.getStringExtra($S)",
-                                        String.class, extraElement.getValue())
-                                        .addCode("if (mParser == null) {\n")
-                                        .addStatement("throw new IllegalStateException(\" Router.init(...) should be call at " +
-                                                "app start!\")")
-                                        .addCode("}\n")
-                                        .addStatement("mActivity.$L = mParser.parse(str,$T.class)",
-                                                extraElement.getFieldName(), TypeName.get(type));
+                                mMessager.printMessage(Diagnostic.Kind.ERROR, type.toString() + " should implement the " +
+                                        "Parcelable", typeElement);
                             }
                         }
                     } else if(typeKind == TypeKind.BYTE || typeKind == TypeKind.SHORT || typeKind == TypeKind.CHAR) {
@@ -205,7 +189,6 @@ public class RouterProcessor extends AbstractProcessor {
                         .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                         .addMethod(injectMethodBuilder.build())
                         .addField(ClassName.get(packageName, typeElement.getSimpleName().toString()), "mActivity")
-                        .addField(ClassName.get("router", "Parser"), "mParser")
                         .addMethod(constructorMethodSpec);
                 JavaFile javaFile = JavaFile.builder(packageName, typeSpecBuilder.build())
                         .build();

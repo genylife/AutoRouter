@@ -23,17 +23,6 @@ class _Router {
 
     private Context mContext;
 
-    private static Converter converter;
-    private static Parser parser;
-
-    static void setConverter(Converter converter) {
-        _Router.converter = converter;
-    }
-
-    static void setParser(Parser parser) {
-        _Router.parser = parser;
-    }
-
     private _Router(Context activity) {
         mContext = activity;
     }
@@ -169,12 +158,6 @@ class _Router {
                 case Parameter.Type.TYPE_STRING:
                     intent.putExtra(p.getExtraKey(), (String) objects[i]);
                     break;
-                case Parameter.Type.TYPE_OBJECT:
-                    if(converter == null) {
-                        throw new IllegalStateException("Router.init(...) should be call at app start!");
-                    }
-                    intent.putExtra(p.getExtraKey(), converter.convert(objects[i], objects[i].getClass()));
-                    break;
                 case Parameter.Type.TYPE_PARCELABLE:
                     intent.putExtra(p.getExtraKey(), ((Parcelable) objects[i]));
                     break;
@@ -188,8 +171,8 @@ class _Router {
         try {
             Constructor<?> constructor = mContext.getClassLoader()
                     .loadClass(injectClass)
-                    .getConstructor(mContext.getClass(), Parser.class);
-            constructor.newInstance(mContext, parser);
+                    .getConstructor(mContext.getClass());
+            constructor.newInstance(mContext);
         } catch (InstantiationException | NoSuchMethodException | InvocationTargetException |
                 IllegalAccessException e) {
             e.printStackTrace();
