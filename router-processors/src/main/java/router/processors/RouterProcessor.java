@@ -29,7 +29,9 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
@@ -151,12 +153,14 @@ public class RouterProcessor extends AbstractProcessor {
                 for (ExtraElement extraElement : extraElementList) {
                     TypeMirror type = extraElement.getType();
                     TypeKind typeKind = type.getKind();
-                    String methodName = typeKind.name().toLowerCase();
-                    String sub1 = methodName.substring(1, methodName.length());
-                    String sub0 = methodName.substring(0, 1).toUpperCase();
-                    methodName = sub0 + sub1;
+                    String typeKindName = typeKind.name().toLowerCase();
 
-                    if(typeKind == TypeKind.DECLARED) {
+                    if(type instanceof PrimitiveType) {
+                        injectMethodBuilder.addStatement("mActivity.$L = intent.get$LExtra($S, $L)",
+                                extraElement.getFieldName(), genMethodName(typeKindName), extraElement.getValue(), genDefValue
+                                        (type));
+                    }
+                    if(type instanceof DeclaredType) {
                         if(type.toString().equals(String.class.getCanonicalName())) {
                             injectMethodBuilder.addStatement("mActivity.$L = intent.getStringExtra($S)",
                                     extraElement.getFieldName(), extraElement.getValue());
@@ -176,12 +180,11 @@ public class RouterProcessor extends AbstractProcessor {
                                         "Parcelable", typeElement);
                             }
                         }
-                    } else if(typeKind == TypeKind.BYTE || typeKind == TypeKind.SHORT || typeKind == TypeKind.CHAR) {
-                        injectMethodBuilder.addStatement("mActivity.$L = intent.get$LExtra($S, $L)",
-                                extraElement.getFieldName(), methodName, extraElement.getValue(), genDefValue(type));
-                    } else {
-                        injectMethodBuilder.addStatement("mActivity.$L = intent.get$LExtra($S, $L)",
-                                extraElement.getFieldName(), methodName, extraElement.getValue(), genDefValue(type));
+                    }
+                    if(type instanceof ArrayType) {
+                        String methodName = genMethodName(((ArrayType) type).getComponentType().toString()) + "Array";
+                        injectMethodBuilder.addStatement("mActivity.$L = intent.get$LExtra($S)",
+                                extraElement.getFieldName(), methodName, extraElement.getValue());
                     }
                 }
 
@@ -199,6 +202,12 @@ public class RouterProcessor extends AbstractProcessor {
                 }
             }
         }
+    }
+
+    private String genMethodName(String name) {
+        char[] cs = name.toCharArray();
+        cs[0] -= 32;
+        return String.valueOf(cs);
     }
 
     private void genMethods(Map<TypeElement, RouterElement> routerMap) {

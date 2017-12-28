@@ -23,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
     @AutoExtra("lo") long mLong;
     @AutoExtra("fl") float mFloat;
     @AutoExtra("dou") double mDouble;
+    @AutoExtra("array") double[] mDoubleArr;
     @AutoExtra("123") Bean ttt;
 
 
