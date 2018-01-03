@@ -14,17 +14,17 @@ import router.annotation.AutoRouter;
 @AutoRouter
 public class MainActivity extends AppCompatActivity {
 
-    @AutoExtra("in") int mInt;
-    @AutoExtra("st") String mString;
-    @AutoExtra("bo") boolean mBoolean;
-    @AutoExtra("by") byte mByte;
-    @AutoExtra("sh") short mShort;
-    @AutoExtra("ch") char mChar;
-    @AutoExtra("lo") long mLong;
-    @AutoExtra("fl") float mFloat;
+    @AutoExtra("in") int[] mInt;
+    @AutoExtra("st") String[] mString;
+    @AutoExtra("bo") boolean[] mBoolean;
+    @AutoExtra("by") byte[] mByte;
+    @AutoExtra("sh") short[] mShort;
+    @AutoExtra("ch") char[] mChar;
+    @AutoExtra("lo") long[] mLong;
+    @AutoExtra("fl") float[] mFloat;
     @AutoExtra("dou") double mDouble;
     @AutoExtra("array") double[] mDoubleArr;
-    @AutoExtra("123") Bean ttt;
+    @AutoExtra("123") Bean[] ttt;
 
 
     @Override

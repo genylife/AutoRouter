@@ -182,9 +182,29 @@ public class RouterProcessor extends AbstractProcessor {
                         }
                     }
                     if(type instanceof ArrayType) {
-                        String methodName = genMethodName(((ArrayType) type).getComponentType().toString()) + "Array";
-                        injectMethodBuilder.addStatement("mActivity.$L = intent.get$LExtra($S)",
-                                extraElement.getFieldName(), methodName, extraElement.getValue());
+                        String methodName = "";
+                        boolean isParcelArray = false;
+                        TypeMirror componentType = ((ArrayType) type).getComponentType();
+                        if(componentType instanceof DeclaredType) {
+                            if(componentType.toString().equals(String.class.getCanonicalName())) {
+                                methodName = "String";
+                            } else {
+                                methodName = "Parcelable";
+                                isParcelArray = true;
+                            }
+                        } else if(componentType instanceof PrimitiveType) {
+                            methodName = genMethodName(componentType.toString());
+                        } else {
+                            mMessager.printMessage(Diagnostic.Kind.ERROR, "unknown type [" + componentType.toString() + "]",
+                                    typeElement);
+                        }
+                        if(isParcelArray) {
+                            injectMethodBuilder.addStatement("mActivity.$L = ($T)intent.getParcelableArrayExtra($S)",
+                                    extraElement.getFieldName(), type,extraElement.getValue());
+                        } else {
+                            injectMethodBuilder.addStatement("mActivity.$L = intent.get$LArrayExtra($S)",
+                                    extraElement.getFieldName(), methodName, extraElement.getValue());
+                        }
                     }
                 }
 
