@@ -14,17 +14,26 @@ import router.annotation.AutoRouter;
 @AutoRouter
 public class MainActivity extends AppCompatActivity {
 
-    @AutoExtra("in") int[] mInt;
-    @AutoExtra("st") String[] mString;
-    @AutoExtra("bo") boolean[] mBoolean;
-    @AutoExtra("by") byte[] mByte;
-    @AutoExtra("sh") short[] mShort;
-    @AutoExtra("ch") char[] mChar;
-    @AutoExtra("lo") long[] mLong;
-    @AutoExtra("fl") float[] mFloat;
+    @AutoExtra("ins") int[] mInts;
+    @AutoExtra("in") int mInt;
+    @AutoExtra("sts") String[] mStrings;
+    @AutoExtra("st") String mString;
+    @AutoExtra("bos") boolean[] mBooleans;
+    @AutoExtra("bo") boolean mBoolean;
+    @AutoExtra("bys") byte[] mBytes;
+    @AutoExtra("by") byte mByte;
+    @AutoExtra("shs") short[] mShorts;
+    @AutoExtra("sh") short mShort;
+    @AutoExtra("chs") char[] mChars;
+    @AutoExtra("ch") char mChar;
+    @AutoExtra("los") long[] mLongs;
+    @AutoExtra("lo") long mLong;
+    @AutoExtra("fls") float[] mFloats;
+    @AutoExtra("fl") float mFloat;
     @AutoExtra("dou") double mDouble;
-    @AutoExtra("array") double[] mDoubleArr;
-    @AutoExtra("123") Bean[] ttt;
+    @AutoExtra("array") double[] mDoubles;
+    @AutoExtra("123s") Bean[] ttts;
+    @AutoExtra("123") Bean ttt;
 
 
     @Override

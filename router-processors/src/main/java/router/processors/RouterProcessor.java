@@ -112,23 +112,24 @@ public class RouterProcessor extends AbstractProcessor {
         return true;
     }
 
-    private Object genDefValue(TypeMirror type) {
+    private String genDefValue(TypeMirror type) {
         switch (type.getKind()) {
             case CHAR:
-                return "(char)" + 0;
+                return "Character.MIN_VALUE";
             case BOOLEAN:
-                return false;
+                return "false";
             case BYTE:
-                return "(byte)" + Byte.MIN_VALUE;
+                return "Byte.MIN_VALUE";
             case INT:
+                return "Integer.MIN_VALUE";
             case LONG:
-                return Byte.MIN_VALUE;
+                return "Long.MIN_VALUE";
             case SHORT:
-                return "(short)" + Byte.MIN_VALUE;
+                return "Short.MIN_VALUE";
             case FLOAT:
+                return "Float.MIN_VALUE";
             case DOUBLE:
-                return -1;
-            case DECLARED:
+                return "Double.MIN_VALUE";
             default:
                 return "";
         }
@@ -173,6 +174,7 @@ public class RouterProcessor extends AbstractProcessor {
                                     isParcel = true;
                                     injectMethodBuilder.addStatement("mActivity.$L = intent.getParcelableExtra($S)",
                                             extraElement.getFieldName(), extraElement.getValue());
+                                    break;
                                 }
                             }
                             if(!isParcel) {
@@ -200,7 +202,7 @@ public class RouterProcessor extends AbstractProcessor {
                         }
                         if(isParcelArray) {
                             injectMethodBuilder.addStatement("mActivity.$L = ($T)intent.getParcelableArrayExtra($S)",
-                                    extraElement.getFieldName(), type,extraElement.getValue());
+                                    extraElement.getFieldName(), type, extraElement.getValue());
                         } else {
                             injectMethodBuilder.addStatement("mActivity.$L = intent.get$LArrayExtra($S)",
                                     extraElement.getFieldName(), methodName, extraElement.getValue());
