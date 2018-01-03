@@ -8,7 +8,7 @@ ext {
     bintrayName = 'autorouter-processors'
     libraryName = 'AutoRouter-processors'
     artifact = 'router-processors'
-    libraryVersion = '0.0.3'
+    libraryVersion = '0.1.0'
     //--------------------------
     bintrayOrg = 'qijun'
     libraryDescription = 'An router library on Android'
