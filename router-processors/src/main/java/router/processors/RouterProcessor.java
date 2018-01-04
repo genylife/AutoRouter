@@ -201,8 +201,15 @@ public class RouterProcessor extends AbstractProcessor {
                                     typeElement);
                         }
                         if(isParcelArray) {
-                            injectMethodBuilder.addStatement("mActivity.$L = ($T)intent.getParcelableArrayExtra($S)",
-                                    extraElement.getFieldName(), type, extraElement.getValue());
+                            injectMethodBuilder.addStatement("$T[] parcels = intent.getParcelableArrayExtra($S)",
+                                    ClassName.get("android.os", "Parcelable"),extraElement.getValue())
+                                    .addStatement("int length = parcels.length")
+                                    .addStatement("mActivity.$L = new $T[length]", extraElement.getFieldName(),
+                                            ((ArrayType) type).getComponentType())
+                                    .beginControlFlow("for(int i = 0; i < length; i++)")
+                                    .addStatement("mActivity.$L[i] = ($T)parcels[i]", extraElement.getFieldName(),
+                                            ((ArrayType) type).getComponentType())
+                                    .endControlFlow();
                         } else {
                             injectMethodBuilder.addStatement("mActivity.$L = intent.get$LArrayExtra($S)",
                                     extraElement.getFieldName(), methodName, extraElement.getValue());

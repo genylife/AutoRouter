@@ -7,7 +7,7 @@ public class Bean implements Parcelable {
 
     public String ert;
 
-    public Bean(){}
+    private Bean(){}
     public Bean(String ert) {
         this.ert = ert;
 

@@ -40,8 +40,17 @@ final class Parameter {
             Type.TYPE_FLOAT,
             Type.TYPE_DOUBLE,
             Type.TYPE_STRING,
-            Type.TYPE_OBJECT,
-            Type.TYPE_PARCELABLE
+            Type.TYPE_PARCELABLE,
+            Type.ARRAY_BOOLEAN,
+            Type.ARRAY_BYTE,
+            Type.ARRAY_CHAR,
+            Type.ARRAY_SHORT,
+            Type.ARRAY_INT,
+            Type.ARRAY_LONG,
+            Type.ARRAY_FLOAT,
+            Type.ARRAY_DOUBLE,
+            Type.ARRAY_STRING,
+            Type.ARRAY_PARCELABLE
     })
     @Retention(RetentionPolicy.SOURCE)
     @interface ParameterType {
@@ -59,19 +68,17 @@ final class Parameter {
         static final int TYPE_FLOAT = 7;
         static final int TYPE_DOUBLE = 8;
         static final int TYPE_STRING = 9;
-        static final int TYPE_OBJECT = 10;
-        static final int TYPE_PARCELABLE = 11;
+        static final int TYPE_PARCELABLE = 10;
 
-        static final int ARRAY_BOOLEAN = 12;
-        static final int ARRAY_BYTE = 13;
-        static final int ARRAY_CHAR = 14;
-        static final int ARRAY_SHORT = 15;
-        static final int ARRAY_INT = 16;
-        static final int ARRAY_LONG = 17;
-        static final int ARRAY_FLOAT = 18;
-        static final int ARRAY_DOUBLE = 19;
-        static final int ARRAY_STRING = 20;
-        static final int ARRAY_OBJECT = 21;
-        static final int ARRAY_PARCELABLE = 22;
+        static final int ARRAY_BOOLEAN = 11;
+        static final int ARRAY_BYTE = 12;
+        static final int ARRAY_CHAR = 13;
+        static final int ARRAY_SHORT = 14;
+        static final int ARRAY_INT = 15;
+        static final int ARRAY_LONG = 16;
+        static final int ARRAY_FLOAT = 17;
+        static final int ARRAY_DOUBLE = 18;
+        static final int ARRAY_STRING = 19;
+        static final int ARRAY_PARCELABLE = 20;
     }
 }

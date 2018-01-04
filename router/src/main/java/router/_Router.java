@@ -27,7 +27,8 @@ class _Router {
         mContext = activity;
     }
 
-    @SuppressWarnings("unchecked") <T> T create(Class<T> service) {
+    @SuppressWarnings("unchecked")
+    <T> T create(Class<T> service) {
         return (T) Proxy.newProxyInstance(service.getClassLoader(), new Class[]{service},
                 new InvocationHandler() {
                     @Override
@@ -78,48 +79,78 @@ class _Router {
         for (int i = 0; i < parameterTypes.length; i++) {
             Parameter parameter = routerMethod.getParameters()[i];
             Type type = parameterTypes[i];
-            if(type == String.class) {
-                parameter.setParamType(Parameter.Type.TYPE_STRING);
-                continue;
-            }
-            switch (type.toString()) {
-                case "boolean":
-                    parameter.setParamType(Parameter.Type.TYPE_BOOLEAN);
-                    break;
-                case "byte":
-                    parameter.setParamType(Parameter.Type.TYPE_BYTE);
-                    break;
-                case "char":
-                    parameter.setParamType(Parameter.Type.TYPE_CHAR);
-                    break;
-                case "int":
-                    parameter.setParamType(Parameter.Type.TYPE_INT);
-                    break;
-                case "short":
-                    parameter.setParamType(Parameter.Type.TYPE_SHORT);
-                    break;
-                case "long":
-                    parameter.setParamType(Parameter.Type.TYPE_LONG);
-                    break;
-                case "float":
-                    parameter.setParamType(Parameter.Type.TYPE_FLOAT);
-                    break;
-                case "double":
-                    parameter.setParamType(Parameter.Type.TYPE_DOUBLE);
-                    break;
-                default:
-                    parameter.setParamType(Parameter.Type.TYPE_OBJECT);
-                    Class typeClass = (Class) type;
-                    Type[] genericInterfaces = typeClass.getGenericInterfaces();
-                    for (Type anInterface : genericInterfaces) {
-                        if(anInterface instanceof Class) {
-                            Class interfaceClass = (Class) anInterface;
-                            if(interfaceClass.getCanonicalName().equals(Parcelable.class.getCanonicalName())) {
-                                parameter.setParamType(Parameter.Type.TYPE_PARCELABLE);
-                                break;
-                            }
-                        }
+            if(type instanceof Class) {
+                Class clazz = ((Class) type);
+                if(clazz.isArray()) {
+                    Class component = clazz.getComponentType();
+                    if(component == String.class) {
+                        parameter.setParamType(Parameter.Type.ARRAY_STRING);
+                        continue;
                     }
+                    String componentName = component.toString().toLowerCase();
+                    switch (componentName) {
+                        case "boolean":
+                            parameter.setParamType(Parameter.Type.ARRAY_BOOLEAN);
+                            break;
+                        case "byte":
+                            parameter.setParamType(Parameter.Type.ARRAY_BYTE);
+                            break;
+                        case "char":
+                            parameter.setParamType(Parameter.Type.ARRAY_CHAR);
+                            break;
+                        case "int":
+                            parameter.setParamType(Parameter.Type.ARRAY_INT);
+                            break;
+                        case "short":
+                            parameter.setParamType(Parameter.Type.ARRAY_SHORT);
+                            break;
+                        case "long":
+                            parameter.setParamType(Parameter.Type.ARRAY_LONG);
+                            break;
+                        case "float":
+                            parameter.setParamType(Parameter.Type.ARRAY_FLOAT);
+                            break;
+                        case "double":
+                            parameter.setParamType(Parameter.Type.ARRAY_DOUBLE);
+                            break;
+                        default:
+                            parameter.setParamType(Parameter.Type.ARRAY_PARCELABLE);
+                    }
+                } else {
+                    if(type == String.class) {
+                        parameter.setParamType(Parameter.Type.TYPE_STRING);
+                        continue;
+                    }
+                    String typeName = type.toString().toLowerCase();
+                    switch (typeName) {
+                        case "boolean":
+                            parameter.setParamType(Parameter.Type.TYPE_BOOLEAN);
+                            break;
+                        case "byte":
+                            parameter.setParamType(Parameter.Type.TYPE_BYTE);
+                            break;
+                        case "char":
+                            parameter.setParamType(Parameter.Type.TYPE_CHAR);
+                            break;
+                        case "int":
+                            parameter.setParamType(Parameter.Type.TYPE_INT);
+                            break;
+                        case "short":
+                            parameter.setParamType(Parameter.Type.TYPE_SHORT);
+                            break;
+                        case "long":
+                            parameter.setParamType(Parameter.Type.TYPE_LONG);
+                            break;
+                        case "float":
+                            parameter.setParamType(Parameter.Type.TYPE_FLOAT);
+                            break;
+                        case "double":
+                            parameter.setParamType(Parameter.Type.TYPE_DOUBLE);
+                            break;
+                        default:
+                            parameter.setParamType(Parameter.Type.TYPE_PARCELABLE);
+                    }
+                }
             }
         }
         return routerMethod;
@@ -160,6 +191,37 @@ class _Router {
                     break;
                 case Parameter.Type.TYPE_PARCELABLE:
                     intent.putExtra(p.getExtraKey(), ((Parcelable) objects[i]));
+                    break;
+
+                case Parameter.Type.ARRAY_BOOLEAN:
+                    intent.putExtra(p.getExtraKey(), (boolean[]) objects[i]);
+                    break;
+                case Parameter.Type.ARRAY_BYTE:
+                    intent.putExtra(p.getExtraKey(), (byte[]) objects[i]);
+                    break;
+                case Parameter.Type.ARRAY_CHAR:
+                    intent.putExtra(p.getExtraKey(), (char[]) objects[i]);
+                    break;
+                case Parameter.Type.ARRAY_SHORT:
+                    intent.putExtra(p.getExtraKey(), (short[]) objects[i]);
+                    break;
+                case Parameter.Type.ARRAY_INT:
+                    intent.putExtra(p.getExtraKey(), (int[]) objects[i]);
+                    break;
+                case Parameter.Type.ARRAY_LONG:
+                    intent.putExtra(p.getExtraKey(), (long[]) objects[i]);
+                    break;
+                case Parameter.Type.ARRAY_FLOAT:
+                    intent.putExtra(p.getExtraKey(), (float[]) objects[i]);
+                    break;
+                case Parameter.Type.ARRAY_DOUBLE:
+                    intent.putExtra(p.getExtraKey(), (double[]) objects[i]);
+                    break;
+                case Parameter.Type.ARRAY_STRING:
+                    intent.putExtra(p.getExtraKey(), (String[]) objects[i]);
+                    break;
+                case Parameter.Type.ARRAY_PARCELABLE:
+                    intent.putExtra(p.getExtraKey(), (Parcelable[]) objects[i]);
                     break;
             }
         }
