@@ -32,6 +32,6 @@ dependencies {
     implementation project(':router-annotations')
     annotationProcessor project(':router-processors')
     implementation project(':router')
-    implementation 'com.google.code.gson:gson:2.2.4'
+    implementation 'com.google.code.gson:gson:2.8.0'
     implementation 'com.alibaba:fastjson:1.2.38'
 }
