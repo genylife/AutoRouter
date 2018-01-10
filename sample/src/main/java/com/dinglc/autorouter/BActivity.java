@@ -31,5 +31,9 @@ public class BActivity extends AppCompatActivity {
                         new Bean[2], new Bean("123")
                 )
                 .go();
+
+//        Router.create(this)
+//                .name("123123")
+//                .param()
     }
 }

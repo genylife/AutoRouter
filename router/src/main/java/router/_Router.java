@@ -47,12 +47,21 @@ class _Router {
         synchronized (routerMethodCache) {
             result = routerMethodCache.get(method);
             if(result == null) {
-                result = handleRouterMethod(method);
+                if(method.getName().equals("name")) {
+//                    result = handlerNameMethod(method);
+                } else {
+                    result = handleRouterMethod(method);
+                }
                 routerMethodCache.put(method, result);
             }
         }
         return result;
     }
+
+
+   /* private RouterMethod handlerNameMethod(Method nameMethod) {
+
+    }*/
 
     private RouterMethod handleRouterMethod(Method method) {
         Annotation[][] parameterAnnotationsArray = method.getParameterAnnotations();

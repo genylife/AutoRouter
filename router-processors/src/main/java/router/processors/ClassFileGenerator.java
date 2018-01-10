@@ -68,11 +68,11 @@ class ClassFileGenerator {
 
     JavaFile routerTable(Map<TypeElement, RouterElement> routerMap) {
         TypeSpec.Builder routerServiceClassBuilder = TypeSpec.interfaceBuilder("RouterService").addModifiers(Modifier.PUBLIC);
+        TypeName returnType = ClassName.get("router", "IntentWrapper");
         for (TypeElement typeElement : routerMap.keySet()) {
             AnnotationSpec methodAnnotationSpec = AnnotationSpec.builder(RouterClass.class)
                     .addMember("value", "\"" + typeElement.getQualifiedName().toString() + "\"")
                     .build();
-            TypeName returnType = ClassName.get("router", "IntentWrapper");
             String methodName = typeElement.getSimpleName().toString();
             methodName = methodName.substring(0, 1).toLowerCase() + methodName.substring(1, methodName.length());
             MethodSpec.Builder methodBuild = MethodSpec.methodBuilder(methodName)
@@ -97,6 +97,14 @@ class ClassFileGenerator {
             }
             routerServiceClassBuilder.addMethod(methodBuild.build());
         }
+
+        //name method
+        MethodSpec.Builder nameMethodBuilder = MethodSpec.methodBuilder("name")
+                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                .addParameter(ParameterSpec.builder(String.class, "name").build())
+                .returns(returnType);
+        routerServiceClassBuilder.addMethod(nameMethodBuilder.build());
+
         JavaFile.Builder builder = JavaFile.builder("router", routerServiceClassBuilder.build());
         return builder.build();
     }
