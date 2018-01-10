@@ -30,6 +30,7 @@ public class BActivity extends AppCompatActivity {
                         .7D, new double[]{.4D, .5D},
                         new Bean[2], new Bean("123")
                 )
+                .addParam("opt",888)
                 .go();
 
 //        Router.create(this)

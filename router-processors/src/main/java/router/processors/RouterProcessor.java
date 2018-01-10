@@ -101,6 +101,7 @@ public class RouterProcessor extends AbstractProcessor {
                     return false;
                 }
                 String value = fieldElement.getAnnotation(AutoExtra.class).value();
+                boolean optional = fieldElement.getAnnotation(AutoExtra.class).optional();
                 TypeMirror typeMirror = fieldElement.asType();
 
                 if(value.equals("")) {
@@ -113,7 +114,7 @@ public class RouterProcessor extends AbstractProcessor {
                 if(extraElements == null) {
                     extraElements = new ArrayList<>();
                 }
-                ExtraElement extraElement = new ExtraElement(value, fieldName, typeMirror);
+                ExtraElement extraElement = new ExtraElement(value, fieldName, typeMirror, optional);
                 extraElements.add(extraElement);
                 routerElement.setExtraElement(extraElements);
             }

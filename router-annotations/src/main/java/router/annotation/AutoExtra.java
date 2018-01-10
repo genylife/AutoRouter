@@ -12,4 +12,6 @@ import java.lang.annotation.Target;
 public @interface AutoExtra {
 
     String value();
+
+    boolean optional() default false;
 }

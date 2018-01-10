@@ -14,10 +14,13 @@ final class ExtraElement {
     private String fieldName;
     private TypeMirror type;
 
-    ExtraElement(String value, String fieldName, TypeMirror type) {
+    private boolean optional;
+
+    ExtraElement(String value, String fieldName, TypeMirror type, boolean optional) {
         this.value = value;
         this.fieldName = fieldName;
         this.type = type;
+        this.optional = optional;
     }
 
     String getValue() {
@@ -30,5 +33,9 @@ final class ExtraElement {
 
     TypeMirror getType() {
         return type;
+    }
+
+    boolean isOptional() {
+        return optional;
     }
 }

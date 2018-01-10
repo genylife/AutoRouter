@@ -83,6 +83,9 @@ class ClassFileGenerator {
             List<ExtraElement> extraElements = routerElement.getExtraElement();
             if(extraElements != null) {
                 for (ExtraElement element : extraElements) {
+                    if(element.isOptional()) {
+                        continue;
+                    }
                     String value = element.getValue();
                     TypeMirror type = element.getType();
                     AnnotationSpec annotationSpec = AnnotationSpec.builder(RouterKey.class)

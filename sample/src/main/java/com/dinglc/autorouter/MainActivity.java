@@ -57,6 +57,8 @@ public class MainActivity extends AppCompatActivity {
     Bean[] ttts;
     @AutoExtra("123")
     Bean ttt;
+    @AutoExtra(value = "opt", optional = true)
+    int optint;
 
 
     @Override
@@ -67,11 +69,11 @@ public class MainActivity extends AppCompatActivity {
         RouterService service = Router.injectWithCreate(this);
 
         String format = "mInt =%d\nmBoolean =%b\nmByte =%d\nmChar =%c\nmShort =%d\nmLong =%d\nmFloat =%f\nmDouble =%f\nmString " +
-                "=%s\nttt=%s";
+                "=%s\nttt=%s\noptInt=%s";
         String format1 = String.format(Locale.CHINA, format, mInt, mBoolean, mByte, mChar, mShort, mLong, mFloat, mDouble,
-                mString, ttt.toString());
+                mString, ttt.toString(), optint);
         ((TextView) findViewById(R.id.tt)).setText(format1);
-        String s = "\n"+Arrays.toString(mInts) + "\n" +
+        String s = "\n" + Arrays.toString(mInts) + "\n" +
                 Arrays.toString(mStrings) + "\n" +
                 Arrays.toString(mBooleans) + "\n" +
                 Arrays.toString(mBytes) + "\n" +
