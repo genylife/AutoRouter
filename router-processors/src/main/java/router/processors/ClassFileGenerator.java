@@ -44,14 +44,14 @@ class ClassFileGenerator {
                 .returns(ClassName.get("router", "RouterService"))
                 .addStatement("_Router r = _Router.init(context)")
                 .addStatement("r.inject()")
-                .addStatement("return r.create(RouterService.class)")
+                .addStatement("return r.create(/*RouterService.class*/)")
                 .build();
         MethodSpec routerMethod3 = MethodSpec.methodBuilder("create")
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .addParameter(ClassName.get("android.content", "Context"), "context")
                 .returns(ClassName.get("router", "RouterService"))
                 .addStatement("_Router r = _Router.init(context)")
-                .addStatement("return r.create(RouterService.class)")
+                .addStatement("return r.create(/*RouterService.class*/)")
                 .build();
         MethodSpec routerPrivateConstructor = MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PRIVATE)
@@ -100,13 +100,6 @@ class ClassFileGenerator {
             }
             routerServiceClassBuilder.addMethod(methodBuild.build());
         }
-
-        //name method
-        MethodSpec.Builder nameMethodBuilder = MethodSpec.methodBuilder("name")
-                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                .addParameter(ParameterSpec.builder(String.class, "name").build())
-                .returns(returnType);
-        routerServiceClassBuilder.addMethod(nameMethodBuilder.build());
 
         JavaFile.Builder builder = JavaFile.builder("router", routerServiceClassBuilder.build());
         return builder.build();

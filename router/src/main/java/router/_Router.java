@@ -28,8 +28,15 @@ class _Router {
     }
 
     @SuppressWarnings("unchecked")
-    <T> T create(Class<T> service) {
-        return (T) Proxy.newProxyInstance(service.getClassLoader(), new Class[]{service},
+    <T> T create(/*Class<T> service*/) {
+        Class<?> routerServiceClass;
+        try {
+            routerServiceClass = Class.forName("router.RouterService");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return (T) Proxy.newProxyInstance(routerServiceClass.getClassLoader(), new Class[]{routerServiceClass},
                 new InvocationHandler() {
                     @Override
                     public Object invoke(Object o, Method method, Object[] objects) throws Throwable {
@@ -48,7 +55,7 @@ class _Router {
             result = routerMethodCache.get(method);
             if(result == null) {
                 if(method.getName().equals("name")) {
-//                    result = handlerNameMethod(method);
+                    //                    result = handlerNameMethod(method);
                 } else {
                     result = handleRouterMethod(method);
                 }
