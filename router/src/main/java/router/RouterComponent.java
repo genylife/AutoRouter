@@ -7,7 +7,9 @@ import android.content.Intent;
 public class RouterComponent {
 
     private Context mContext;
-    private String mName;
+
+    private RouterComponent() {
+    }
 
     private RouterComponent(Context context) {
         mContext = context;
@@ -19,12 +21,15 @@ public class RouterComponent {
 
 
     public IntentWrapper name(String name) {
-        mName = name;
-        //通过name找到toActivity（通过RouterServiceManager去查找）,并返回IntentWrapper
+        Class toActivity = null;
+        try {
+            toActivity = RouterServiceManager.find(name);
+        } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
 
-        Intent intent = new Intent(/*mContext,toActivity*/);
-        IntentWrapper wrapper = new IntentWrapper(mContext, intent);
+        Intent intent = new Intent(mContext, toActivity);
 
-        return wrapper;
+        return new IntentWrapper(mContext, intent);
     }
 }

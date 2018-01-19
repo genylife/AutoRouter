@@ -10,7 +10,7 @@ import java.util.Locale;
 import router.annotation.AutoExtra;
 import router.annotation.AutoRouter;
 
-@AutoRouter
+@AutoRouter("cActivity")
 public class CActivity extends AppCompatActivity {
 
     @AutoExtra("a") int a;

@@ -57,7 +57,7 @@ public class RouterProcessor extends AbstractProcessor {
 
         final List<JavaFile> injectClassFiles = mGenerator.allActivityInjectClassFiles(routerMap);
 
-        JavaFile apiClassFile = mGenerator.apiClassFile();
+        JavaFile apiClassFile = mGenerator.apiClassFile(routerMap);
 
         try {
             routerInterfaceFile.writeTo(mFiler);

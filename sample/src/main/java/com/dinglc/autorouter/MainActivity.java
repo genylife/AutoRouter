@@ -14,7 +14,7 @@ import router.annotation.AutoExtra;
 import router.annotation.AutoRouter;
 
 
-@AutoRouter
+@AutoRouter("package.main")
 public class MainActivity extends AppCompatActivity {
 
     @AutoExtra("ins")

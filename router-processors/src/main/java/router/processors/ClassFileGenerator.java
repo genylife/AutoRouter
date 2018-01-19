@@ -2,6 +2,7 @@ package router.processors;
 
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
@@ -9,6 +10,7 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,8 +24,10 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 
+import router.annotation.AutoRouter;
 import router.annotation.RouterClass;
 import router.annotation.RouterKey;
+import router.annotation.RouterName;
 
 class ClassFileGenerator {
     private Messager mMessager;
@@ -32,7 +36,7 @@ class ClassFileGenerator {
         mMessager = messager;
     }
 
-    JavaFile apiClassFile() {
+    JavaFile apiClassFile(Map<TypeElement, RouterElement> routerMap) {
         MethodSpec routerMethod1 = MethodSpec.methodBuilder("inject")
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .addParameter(ClassName.get("android.content", "Context"), "context")
@@ -56,14 +60,31 @@ class ClassFileGenerator {
         MethodSpec routerPrivateConstructor = MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PRIVATE)
                 .build();
-        TypeSpec routerClass = TypeSpec.classBuilder("Router")
+        TypeSpec.Builder routerClassBuilder = TypeSpec.classBuilder("Router")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(routerMethod1)
                 .addMethod(routerMethod2)
                 .addMethod(routerMethod3)
-                .addMethod(routerPrivateConstructor)
-                .build();
-        return JavaFile.builder("router", routerClass).build();
+                .addMethod(routerPrivateConstructor);
+
+        MethodSpec.Builder findMethodBuilder = MethodSpec.methodBuilder("find")
+                .addParameter(String.class, "name")
+                .addStatement("return (String)NAME_MAP.get(name)")
+                .returns(String.class);
+        routerClassBuilder.addMethod(findMethodBuilder.build());
+
+        routerClassBuilder.addField(HashMap.class, "NAME_MAP", Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
+        CodeBlock.Builder staticBlockBuilder = CodeBlock.builder()
+                .addStatement("NAME_MAP = new HashMap<String,String>()");
+        for (TypeElement typeElement : routerMap.keySet()) {
+            String name = routerMap.get(typeElement).getValue();
+            if(name.isEmpty()) {
+                continue;
+            }
+            staticBlockBuilder.addStatement("NAME_MAP.put($S,$S)", name, typeElement.getQualifiedName().toString());
+        }
+        routerClassBuilder.addStaticBlock(staticBlockBuilder.build());
+        return JavaFile.builder("router", routerClassBuilder.build()).build();
     }
 
     JavaFile routerTable(Map<TypeElement, RouterElement> routerMap) {
@@ -79,6 +100,15 @@ class ClassFileGenerator {
                     .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                     .addAnnotation(methodAnnotationSpec)
                     .returns(returnType);
+
+            String routerName = typeElement.getAnnotation(AutoRouter.class).value();
+            if(!routerName.isEmpty()) {
+                AnnotationSpec nameAnnotationSpec = AnnotationSpec.builder(RouterName.class)
+                        .addMember("value", "\"" + routerName + "\"")
+                        .build();
+                methodBuild.addAnnotation(nameAnnotationSpec);
+            }
+
             RouterElement routerElement = routerMap.get(typeElement);
             List<ExtraElement> extraElements = routerElement.getExtraElement();
             if(extraElements != null) {
@@ -184,13 +214,17 @@ class ClassFileGenerator {
                     if(isParcelArray) {
                         injectMethodBuilder.addStatement("$T[] parcels = intent.getParcelableArrayExtra($S)",
                                 ClassName.get("android.os", "Parcelable"), extraElement.getValue())
+                                .addCode("if(parcels != null){\n")
                                 .addStatement("int length = parcels.length")
                                 .addStatement("mActivity.$L = new $T[length]", extraElement.getFieldName(),
                                         ((ArrayType) type).getComponentType())
                                 .beginControlFlow("for(int i = 0; i < length; i++)")
                                 .addStatement("mActivity.$L[i] = ($T)parcels[i]", extraElement.getFieldName(),
                                         ((ArrayType) type).getComponentType())
-                                .endControlFlow();
+                                .endControlFlow()
+                                .addCode("} else {\n")
+                                .addStatement("mActivity.$L = null", extraElement.getFieldName())
+                                .addCode("}\n");
                     } else {
                         injectMethodBuilder.addStatement("mActivity.$L = intent.get$LArrayExtra($S)",
                                 extraElement.getFieldName(), methodName, extraElement.getValue());
