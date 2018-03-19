@@ -9,9 +9,9 @@ import java.util.Arrays;
 import java.util.Locale;
 
 import router.Router;
-import router.RouterService;
 import router.annotation.AutoExtra;
 import router.annotation.AutoRouter;
+import router.sample.RouterService;
 
 
 @AutoRouter("package.main")
@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        RouterService service = Router.injectWithCreate(this);
+//        RouterService service = Router.injectWithCreate(this);
 
         String format = "mInt =%d\nmBoolean =%b\nmByte =%d\nmChar =%c\nmShort =%d\nmLong =%d\nmFloat =%f\nmDouble =%f\nmString " +
                 "=%s\nttt=%s\noptInt=%s";

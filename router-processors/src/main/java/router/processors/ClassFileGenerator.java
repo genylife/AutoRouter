@@ -31,9 +31,11 @@ import router.annotation.RouterName;
 
 class ClassFileGenerator {
     private Messager mMessager;
+    private String mModuleName;
 
-    ClassFileGenerator(Messager messager) {
+    ClassFileGenerator(Messager messager, String moduleName) {
         mMessager = messager;
+        mModuleName = moduleName;
     }
 
     JavaFile apiClassFile(Map<TypeElement, RouterElement> routerMap) {
@@ -42,29 +44,29 @@ class ClassFileGenerator {
                 .addParameter(ClassName.get("android.content", "Context"), "context")
                 .addStatement("_Router.init(context).inject()")
                 .build();
-        MethodSpec routerMethod2 = MethodSpec.methodBuilder("injectWithCreate")
+        /*MethodSpec routerMethod2 = MethodSpec.methodBuilder("injectWithCreate")
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .addParameter(ClassName.get("android.content", "Context"), "context")
                 .returns(ClassName.get("router", "RouterService"))
                 .addStatement("_Router r = _Router.init(context)")
                 .addStatement("r.inject()")
-                .addStatement("return r.create(/*RouterService.class*/)")
+                .addStatement("return r.create(*//*RouterService.class*//*)")
                 .build();
         MethodSpec routerMethod3 = MethodSpec.methodBuilder("create")
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .addParameter(ClassName.get("android.content", "Context"), "context")
                 .returns(ClassName.get("router", "RouterService"))
                 .addStatement("_Router r = _Router.init(context)")
-                .addStatement("return r.create(/*RouterService.class*/)")
-                .build();
+                .addStatement("return r.create(*//*RouterService.class*//*)")
+                .build();*/
         MethodSpec routerPrivateConstructor = MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PRIVATE)
                 .build();
         TypeSpec.Builder routerClassBuilder = TypeSpec.classBuilder("Router")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addMethod(routerMethod1)
-                .addMethod(routerMethod2)
-                .addMethod(routerMethod3)
+//                .addMethod(routerMethod2)
+//                .addMethod(routerMethod3)
                 .addMethod(routerPrivateConstructor);
 
         MethodSpec.Builder findMethodBuilder = MethodSpec.methodBuilder("find")
@@ -78,7 +80,7 @@ class ClassFileGenerator {
                 .addStatement("NAME_MAP = new HashMap<String,String>()");
         for (TypeElement typeElement : routerMap.keySet()) {
             String name = routerMap.get(typeElement).getValue();
-            if(name.isEmpty()) {
+            if (name.isEmpty()) {
                 continue;
             }
             staticBlockBuilder.addStatement("NAME_MAP.put($S,$S)", name, typeElement.getQualifiedName().toString());
@@ -102,7 +104,7 @@ class ClassFileGenerator {
                     .returns(returnType);
 
             String routerName = typeElement.getAnnotation(AutoRouter.class).value();
-            if(!routerName.isEmpty()) {
+            if (!routerName.isEmpty()) {
                 AnnotationSpec nameAnnotationSpec = AnnotationSpec.builder(RouterName.class)
                         .addMember("value", "\"" + routerName + "\"")
                         .build();
@@ -111,9 +113,9 @@ class ClassFileGenerator {
 
             RouterElement routerElement = routerMap.get(typeElement);
             List<ExtraElement> extraElements = routerElement.getExtraElement();
-            if(extraElements != null) {
+            if (extraElements != null) {
                 for (ExtraElement element : extraElements) {
-                    if(element.isOptional()) {
+                    if (element.isOptional()) {
                         continue;
                     }
                     String value = element.getValue();
@@ -131,7 +133,7 @@ class ClassFileGenerator {
             routerServiceClassBuilder.addMethod(methodBuild.build());
         }
 
-        JavaFile.Builder builder = JavaFile.builder("router", routerServiceClassBuilder.build());
+        JavaFile.Builder builder = JavaFile.builder("router." + mModuleName, routerServiceClassBuilder.build());
         return builder.build();
     }
 
@@ -154,7 +156,7 @@ class ClassFileGenerator {
 
         //get all of injectField
         List<ExtraElement> extraElementList = routerElement.getExtraElement();
-        if(extraElementList != null) {
+        if (extraElementList != null) {
             for (ExtraElement extraElement : extraElementList) {
                 //get field type
                 TypeMirror type = extraElement.getType();
@@ -162,14 +164,14 @@ class ClassFileGenerator {
                 String typeKindName = typeKind.name().toLowerCase();
 
                 //PrimitiveType：boolean,char,byte,short,int,long,float,double
-                if(type instanceof PrimitiveType) {
+                if (type instanceof PrimitiveType) {
                     injectMethodBuilder.addStatement("mActivity.$L = intent.get$LExtra($S, $L)",
                             extraElement.getFieldName(), genMethodName(typeKindName), extraElement.getValue(), genDefValue
                                     (type));
                 }
                 //DeclaredType：String,Parcelable
-                if(type instanceof DeclaredType) {
-                    if(type.toString().equals(String.class.getCanonicalName())) {
+                if (type instanceof DeclaredType) {
+                    if (type.toString().equals(String.class.getCanonicalName())) {
                         injectMethodBuilder.addStatement("mActivity.$L = intent.getStringExtra($S)",
                                 extraElement.getFieldName(), extraElement.getValue());
                     } else {
@@ -177,41 +179,41 @@ class ClassFileGenerator {
                                 .getInterfaces();
                         boolean isParcel = false;
                         for (TypeMirror mirror : interfaces) {
-                            if(mirror.toString().equals("android.os.Parcelable")) {
+                            if (mirror.toString().equals("android.os.Parcelable")) {
                                 isParcel = true;
                                 injectMethodBuilder.addStatement("mActivity.$L = intent.getParcelableExtra($S)",
                                         extraElement.getFieldName(), extraElement.getValue());
                                 break;
                             }
                         }
-                        if(!isParcel) {
+                        if (!isParcel) {
                             mMessager.printMessage(Diagnostic.Kind.ERROR, type.toString() + " should implement the " +
                                     "Parcelable", typeElement);
                         }
                     }
                 }
                 //ArrayType: Array of PrimitiveType, Array of String, Array of Parcelable
-                if(type instanceof ArrayType) {
+                if (type instanceof ArrayType) {
                     String methodName = "";
                     boolean isParcelArray = false;
                     //Array's componentType
                     TypeMirror componentType = ((ArrayType) type).getComponentType();
 
                     //String,Parcelable
-                    if(componentType instanceof DeclaredType) {
-                        if(componentType.toString().equals(String.class.getCanonicalName())) {
+                    if (componentType instanceof DeclaredType) {
+                        if (componentType.toString().equals(String.class.getCanonicalName())) {
                             methodName = "String";
                         } else {
                             methodName = "Parcelable";
                             isParcelArray = true;
                         }
-                    } else if(componentType instanceof PrimitiveType) {//PrimitiveType
+                    } else if (componentType instanceof PrimitiveType) {//PrimitiveType
                         methodName = genMethodName(componentType.toString());
                     } else {
                         mMessager.printMessage(Diagnostic.Kind.ERROR, "unknown type [" + componentType.toString() + "]",
                                 typeElement);
                     }
-                    if(isParcelArray) {
+                    if (isParcelArray) {
                         injectMethodBuilder.addStatement("$T[] parcels = intent.getParcelableArrayExtra($S)",
                                 ClassName.get("android.os", "Parcelable"), extraElement.getValue())
                                 .addCode("if(parcels != null){\n")

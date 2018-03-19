@@ -41,17 +41,18 @@ public class RouterProcessor extends AbstractProcessor {
         super.init(processingEnv);
         mFiler = processingEnv.getFiler();
         mMessager = processingEnv.getMessager();
+        String moduleName = processingEnv.getOptions().getOrDefault("moduleName", "");
 
-        mGenerator = new ClassFileGenerator(mMessager);
+        mGenerator = new ClassFileGenerator(mMessager, moduleName);
     }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         Map<TypeElement, RouterElement> routerMap = scanAutoRouter(roundEnv);
-        if(routerMap == null) return false;
+        if (routerMap == null) return false;
 
         boolean bool = scanAutoExtra(roundEnv, routerMap);
-        if(!bool) return false;
+        if (!bool) return false;
 
         JavaFile routerInterfaceFile = mGenerator.routerTable(routerMap);
 
@@ -62,7 +63,7 @@ public class RouterProcessor extends AbstractProcessor {
         try {
             routerInterfaceFile.writeTo(mFiler);
             for (JavaFile file : injectClassFiles) {
-                if(file != null) {
+                if (file != null) {
                     file.writeTo(mFiler);
                 }
             }
@@ -77,7 +78,7 @@ public class RouterProcessor extends AbstractProcessor {
     private Map<TypeElement, RouterElement> scanAutoRouter(RoundEnvironment roundEnv) {
         Map<TypeElement, RouterElement> routerMap = new HashMap<>();
         for (Element element : roundEnv.getElementsAnnotatedWith(AutoRouter.class)) {
-            if(element.getKind() == ElementKind.CLASS) {
+            if (element.getKind() == ElementKind.CLASS) {
                 TypeElement typeElement = (TypeElement) element;
                 System.out.println(typeElement.getSimpleName());
                 String value = typeElement.getAnnotation(AutoRouter.class).value();
@@ -91,11 +92,11 @@ public class RouterProcessor extends AbstractProcessor {
 
     private boolean scanAutoExtra(RoundEnvironment roundEnv, Map<TypeElement, RouterElement> routerMap) {
         for (Element element : roundEnv.getElementsAnnotatedWith(AutoExtra.class)) {
-            if(element.getKind() == ElementKind.FIELD) {
+            if (element.getKind() == ElementKind.FIELD) {
                 VariableElement fieldElement = (VariableElement) element;
                 String fieldName = fieldElement.getSimpleName().toString();
                 TypeElement typeElement = (TypeElement) fieldElement.getEnclosingElement();
-                if(!routerMap.containsKey(typeElement)) {
+                if (!routerMap.containsKey(typeElement)) {
                     mMessager.printMessage(Diagnostic.Kind.ERROR, "please check "
                             + typeElement.getSimpleName() + "is with annotation 'AutoRouter' !", typeElement);
                     return false;
@@ -104,14 +105,14 @@ public class RouterProcessor extends AbstractProcessor {
                 boolean optional = fieldElement.getAnnotation(AutoExtra.class).optional();
                 TypeMirror typeMirror = fieldElement.asType();
 
-                if(value.equals("")) {
+                if (value.equals("")) {
                     mMessager.printMessage(Diagnostic.Kind.ERROR, "AutoExtra annotation can not be ''!", typeElement);
                     return false;
                 }
 
                 RouterElement routerElement = routerMap.get(typeElement);
                 List<ExtraElement> extraElements = routerElement.getExtraElement();
-                if(extraElements == null) {
+                if (extraElements == null) {
                     extraElements = new ArrayList<>();
                 }
                 ExtraElement extraElement = new ExtraElement(value, fieldName, typeMirror, optional);
